@@ -10,7 +10,7 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import { fetchFanart } from "@/lib/fetchData";
+import { fetchFanart } from "@/lib/fetchContent";
 
 export default function FanartGallery() {
   const [items, setItems] = useState([]);
