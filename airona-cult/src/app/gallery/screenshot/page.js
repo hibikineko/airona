@@ -7,8 +7,11 @@ import {
   Container,
   Typography,
   Grid,
-  Button,
+  Card,
+  CardActionArea,
+  CardContent,
   CircularProgress,
+  Button,
 } from "@mui/material";
 import { fetchScreenshots } from "@/lib/fetchContent";
 
@@ -19,30 +22,29 @@ export default function ScreenshotGallery() {
 
   const PAGE_SIZE = 12;
 
-  // stable fetch function
   const loadMore = useCallback(
     async (pageIndex) => {
       setLoading(true);
 
-      const newItems = await fetchScreenshots(pageIndex, PAGE_SIZE);
-      alert(pageIndex)
-      console.log(newItems);
+      try {
+        const newItems = await fetchScreenshots(pageIndex, PAGE_SIZE);
 
-      if (pageIndex === 0) {
-        // first load
-        setItems(newItems);
-      } else {
-        // append next page
-        setItems((prev) => [...prev, ...newItems]);
+        if (pageIndex === 0) {
+          setItems(newItems);
+        } else {
+          setItems((prev) => [...prev, ...newItems]);
+        }
+
+        setPage(pageIndex);
+      } catch (err) {
+        console.error("Failed to fetch screenshots:", err);
+      } finally {
+        setLoading(false);
       }
-
-      setPage(pageIndex);
-      setLoading(false);
     },
     []
   );
 
-  // run only once on mount
   useEffect(() => {
     loadMore(0);
   }, [loadMore]);
@@ -53,27 +55,51 @@ export default function ScreenshotGallery() {
         📸 Screenshot Gallery
       </Typography>
 
-      <Grid container spacing={3}>
-        {items.map((img, i) => (
-          <Grid item xs={12} sm={6} md={4} key={i}>
-            <Box
-              sx={{
-                position: "relative",
-                width: "100%",
-                height: 300,
-                borderRadius: 2,
-                overflow: "hidden",
-                boxShadow: 3,
-              }}
-            >
-              <Image
-                src={img.image_url}
-                alt={img.title || "Screenshot"}
-                fill
-                sizes="(max-width: 768px) 100vw, 33vw"
-                style={{ objectFit: "cover" }}
-              />
-            </Box>
+      <Grid container spacing={3} justifyContent="center">
+        {items.map((img) => (
+          <Grid
+            item
+            key={img.id}
+            sx={{
+              flexGrow: 1,
+              minWidth: 400, // minimum width per card
+            }}
+          >
+            <Card sx={{ height: "100%", borderRadius: 2, overflow: "hidden", boxShadow: 3 }}>
+              <CardActionArea
+                sx={{
+                  height: "100%",
+                  "&:hover .imageOverlay": { opacity: 0.2 },
+                }}
+              >
+                <Box sx={{ position: "relative", width: "100%", height: 250 }}>
+                  <Image
+                    src={img.image_url}
+                    alt={img.title || "Screenshot"}
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
+                  <Box
+                    className="imageOverlay"
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      bgcolor: "black",
+                      opacity: 0,
+                      transition: "opacity 0.3s",
+                    }}
+                  />
+                </Box>
+                <CardContent>
+                  <Typography variant="subtitle1">
+                    {img.title || "Untitled"}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
           </Grid>
         ))}
       </Grid>
