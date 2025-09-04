@@ -9,14 +9,17 @@ import ForumIcon from '@mui/icons-material/Forum';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import PublicIcon from '@mui/icons-material/Public';
 import InfoIcon from '@mui/icons-material/Info';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const navOptions = [
     { label: 'Home', icon: <HomeIcon />, path: '/' },
+    { label: 'Airona', icon: <PublicIcon />, path: '/airona' },
+    { label: 'Praise Airona', icon: <AttachMoneyIcon />, path: '/airona-game' },
     { label: 'Latest News', icon: <NewspaperIcon />, path: '/news' },
     { label: 'Upcoming Events', icon: <EventIcon />, path: '/events' },
     { label: 'Community Posts', icon: <ForumIcon />, path: '/community' },
-    { label: 'Gallery', icon: <PhotoLibraryIcon />, path: '/gallery' },
-    { label: 'Airona', icon: <PublicIcon />, path: '/airona' },
+    { label: 'Screenshot Gallery', icon: <PhotoLibraryIcon />, path: '/gallery/screenshot' },
+    { label: 'fanart Gallery', icon: <PhotoLibraryIcon />, path: '/gallery/fanart' },
     { label: 'Upload (members only)', icon: <PublicIcon />, path: '/upload' },
     { label: 'About Us', icon: <InfoIcon />, path: '/about' },
 ];

@@ -4,9 +4,9 @@ import ContentCarousel from "@/components/ContentCarousel";
 
 export default async function HomePage() {
   const [fanart, screenshots, posts] = await Promise.all([
-    fetchFanart(10),
-    fetchScreenshots(10),
-    fetchPosts(10),
+    fetchFanart(0,12),
+    fetchScreenshots(0,12),
+    fetchPosts(0,12),
   ]);
 
   return (
