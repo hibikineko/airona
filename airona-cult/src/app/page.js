@@ -3,6 +3,7 @@
 import { Button, Card, CardContent, Typography, Box, Link } from "@mui/material";
 import Carousal from "@/components/gallery/carousal";
 import CommunityPosts from "@/components/gallery/communityPosts";
+import { useSession } from "next-auth/react";
 
 let sampleImages = [
   "/airona/personal1.png",
@@ -60,12 +61,14 @@ let samplePosts = [
 ];
 
 export default function Home() {
+  const { data: session } = useSession();
+
   return (
     <main style={{ padding: "2rem" }}>
       <Card>
         <CardContent>
           <Typography variant="h3" gutterBottom>
-            Welcome to the Airona Fan Site 🌿
+            Welcome{session?.user?.name ? `, ${session.user.name}` : ""} to the Airona Fan Site 🌿
           </Typography>
           <Typography variant="body1">
             A community hub for fan art, screenshots, and adventures with Airona!

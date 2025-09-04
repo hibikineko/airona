@@ -17,6 +17,7 @@ const navOptions = [
     { label: 'Community Posts', icon: <ForumIcon />, path: '/community' },
     { label: 'Gallery', icon: <PhotoLibraryIcon />, path: '/gallery' },
     { label: 'Airona', icon: <PublicIcon />, path: '/airona' },
+    { label: 'Upload (members only)', icon: <PublicIcon />, path: '/upload' },
     { label: 'About Us', icon: <InfoIcon />, path: '/about' },
 ];
 
