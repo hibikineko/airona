@@ -21,7 +21,7 @@ export default async function HomePage() {
       <section style={{ marginBottom: "3rem" }}>
         <ContentCarousel title="Latest Fanart" items={fanart} type="fanart" />
         <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-          <Link href="/fanart">View More →</Link>
+          <Link href="/gallery/fanart">View More →</Link>
         </div>
       </section>
 
@@ -33,7 +33,7 @@ export default async function HomePage() {
           type="screenshot"
         />
         <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-          <Link href="/screenshot">View More →</Link>
+          <Link href="/gallery/screenshot">View More →</Link>
         </div>
       </section>
 
@@ -41,7 +41,7 @@ export default async function HomePage() {
       <section style={{ marginBottom: "3rem" }}>
         <ContentCarousel title="Latest Posts" items={posts} type="posts" />
         <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-          <Link href="/posts">View More →</Link>
+          <Link href="/gallery/posts">View More →</Link>
         </div>
       </section>
     </main>
