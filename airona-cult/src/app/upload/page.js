@@ -1,4 +1,3 @@
-// app/upload/page.js
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +18,7 @@ export default function UploadPage() {
   const { data: session, status } = useSession();
   const [isMember, setIsMember] = useState(false);
   const [form, setForm] = useState({
-    type: "fanart", // fanart, post, screenshot
+    type: "fanart", // fanart, posts, screenshot
     title: "",
     text: "",
     source: "",
@@ -53,59 +52,33 @@ export default function UploadPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isMember) {
-      alert("You must be a guild member to upload!");
-      return;
+        alert("You must be a guild member to upload!");
+        return;
     }
 
-    if (!form.image) {
-      alert("Please select an image.");
-      return;
-    }
+    const formData = new FormData();
+    formData.append("title", form.title);
 
-    const filePath = `${form.type}/${Date.now()}-${form.image.name}`;
+    if (form.image) formData.append("image", form.image);
+    if (form.type === "fanart") formData.append("source", form.source);
+    if (form.type === "posts") formData.append("text", form.text);
 
-    // Upload to storage
-    const { error: uploadError } = await supabase.storage
-      .from(form.type) // bucket matches type
-      .upload(filePath, form.image);
+    const res = await fetch(`/api/${form.type}/add`, {
+        method: "POST",
+        body: formData,
+    });
 
-    if (uploadError) {
-      console.error(uploadError);
-      alert("Upload failed!");
-      return;
-    }
-
-    const { data: publicUrl } = supabase.storage
-      .from(form.type)
-      .getPublicUrl(filePath);
-
-    // Insert into the correct table
-    const insertData = {
-      title: form.title,
-      image_url: publicUrl.publicUrl,
-      author: session.user.id,
-    };
-
-    if (form.type === "fanart") {
-      insertData.source = form.source;
-      insertData.author = session.user.name; // fanart author is text
-    } else if (form.type === "posts") {
-      insertData.text = form.text;
-    }
-
-    const { error: insertError } = await supabase
-      .from(form.type)
-      .insert([insertData]);
-
-    if (insertError) {
-      console.error(insertError);
-      alert("Failed to save record!");
-      return;
+    if (!res.ok) {
+        const err = await res.json();
+        console.error(err);
+        alert("Failed to upload!");
+        return;
     }
 
     alert("Upload successful!");
     setForm({ type: "fanart", title: "", text: "", source: "", image: null });
-  };
+    };
+
 
   if (status === "loading") return <p>Loading...</p>;
 
@@ -170,6 +143,12 @@ export default function UploadPage() {
                 Select Image
                 <input type="file" hidden name="image" onChange={handleChange} />
               </Button>
+              {form.image && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Selected file: {form.image.name} (
+                  {(form.image.size / 1024).toFixed(2)} KB)
+                </Typography>
+              )}
 
               <Button type="submit" variant="contained" color="primary">
                 Upload
