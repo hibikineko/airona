@@ -1,49 +1,59 @@
-import Link from "next/link";
-import { fetchFanart, fetchScreenshots, fetchPosts } from "@/lib/fetchContent";
-import ContentCarousel from "@/components/ContentCarousel";
+"use client";
 
-export default async function HomePage() {
-  const [fanart, screenshots, posts] = await Promise.all([
-    fetchFanart(0,12),
-    fetchScreenshots(0,12),
-    fetchPosts(0,12),
-  ]);
+import { Box, Typography, Button, Link } from "@mui/material";
+import Image from "next/image";
 
+export default function OfflinePage() {
   return (
-    <main style={{ padding: "2rem" }}>
-      {/* --- Keep your existing top hero/intro section --- */}
-      <section style={{ marginBottom: "3rem" }}>
-        <h1>Welcome to Airona</h1>
-        <p>A community hub for guild members ✨</p>
-      </section>
-
-      {/* --- Fanart Section --- */}
-      <section style={{ marginBottom: "3rem" }}>
-        <ContentCarousel title="Latest Fanart" items={fanart} type="fanart" />
-        <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-          <Link href="/gallery/fanart">View More →</Link>
-        </div>
-      </section>
-
-      {/* --- Screenshot Section --- */}
-      <section style={{ marginBottom: "3rem" }}>
-        <ContentCarousel
-          title="Latest Screenshots"
-          items={screenshots}
-          type="screenshot"
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        textAlign: "center",
+        bgcolor: "#f5f5f5",
+        px: 2,
+      }}
+    >
+      {/* Airona sticker */}
+      <Box sx={{ mb: 4, width: 150, height: 150, position: "relative" }}>
+        <Image
+          src="/airona/airona3.png"
+          alt="Airona Cry Sticker"
+          fill
+          style={{ objectFit: "contain" }}
         />
-        <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-          <Link href="/gallery/screenshot">View More →</Link>
-        </div>
-      </section>
+      </Box>
 
-      {/* --- Posts Section --- */}
-      <section style={{ marginBottom: "3rem" }}>
-        <ContentCarousel title="Latest Posts" items={posts} type="posts" />
-        <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
-          <Link href="/gallery/posts">View More →</Link>
-        </div>
-      </section>
-    </main>
+      {/* Title */}
+      <Typography variant="h3" gutterBottom>
+        🚧 Site Under Maintenance
+      </Typography>
+
+      {/* Message */}
+      <Typography variant="h6" color="text.secondary" sx={{ mb: 2, maxWidth: 400 }}>
+        Hey there! The site is currently offline for maintenance. We’ll be back soon!
+      </Typography>
+
+      {/* Contact info */}
+      <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
+        For more info, contact{" "}
+        <Link href="https://discord.com/users/275152997498224641" target="_blank" underline="hover">
+          hibikineko
+        </Link>{" "}
+        on Discord
+      </Typography>
+
+      {/* Optional refresh button */}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => window.location.reload()}
+      >
+        Refresh
+      </Button>
+    </Box>
   );
 }

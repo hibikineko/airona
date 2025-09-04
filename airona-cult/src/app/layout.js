@@ -3,8 +3,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import getAironaTheme from "../theme/aironaTheme";
-import Header from "@/components/layout/header";
-import { SessionProvider } from "next-auth/react";
 
 export default function RootLayout({ children }) {
   const [mode, setMode] = useState("light");
@@ -33,10 +31,7 @@ export default function RootLayout({ children }) {
       <body>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <SessionProvider>
-          <Header toggleMode={toggleMode} />
           {children}
-          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>
