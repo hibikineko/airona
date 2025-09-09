@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import {
   Box,
   Container,
@@ -26,9 +25,8 @@ export default function FanartGallery() {
   const [hasMore, setHasMore] = useState(true);
   const [openImage, setOpenImage] = useState(null);
 
-  const PAGE_SIZE = 4; // 4 images per page
+  const PAGE_SIZE = 8; // load in multiples of 4 so the grid fills nicely
 
-  // Load more function
   const loadMore = async (pageIndex) => {
     if (loading || !hasMore) return;
     setLoading(true);
@@ -48,24 +46,31 @@ export default function FanartGallery() {
     }
   };
 
-  // Initial fetch once
   useEffect(() => {
     loadMore(0);
   }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
+    <Container maxWidth="xl" sx={{ py: 6 }}>
       <Typography variant="h3" align="center" gutterBottom>
         🎨 Fanart Gallery
       </Typography>
 
-      <Grid container spacing={3} justifyContent="center">
+      <Grid container spacing={2} justifyContent="center">
         {items.map((img, i) => (
-          <Grid item key={i}>
+          <Grid
+            item
+            key={i}
+            xs={12}
+            sm={6}
+            md={4}
+            lg={3}
+            sx={{ display: "flex", justifyContent: "center" }}
+          >
             <Card
               sx={{
-                width: 400,
-                height: 300,
+                width: "100%",
+                maxWidth: 320,
                 borderRadius: 2,
                 overflow: "hidden",
                 boxShadow: 3,
@@ -73,30 +78,38 @@ export default function FanartGallery() {
                 "&:hover": { transform: "scale(1.03)", boxShadow: 6 },
               }}
             >
-              <CardActionArea
-                sx={{ width: "100%", height: "100%" }}
-                onClick={() => setOpenImage(img.image_url)}
-              >
-                <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
-                  <Image
+              <CardActionArea onClick={() => setOpenImage(img.image_url)}>
+                <Box sx={{ position: "relative", width: "100%", height: 220 }}>
+                  <img
                     src={img.image_url}
                     alt={img.title || "Fanart"}
-                    fill
-                    style={{ objectFit: "cover" }}
-                  />
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      bottom: 0,
+                    style={{
                       width: "100%",
-                      bgcolor: "rgba(0,0,0,0.4)",
-                      color: "#fff",
-                      p: 0.5,
-                      textAlign: "center",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
                     }}
-                  >
-                    {img.title && <Typography variant="subtitle1">{img.title}</Typography>}
-                  </Box>
+                  />
+                  {img.title && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        bottom: 0,
+                        width: "100%",
+                        bgcolor: "rgba(0,0,0,0.4)",
+                        color: "#fff",
+                        p: 0.5,
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 500, fontSize: "0.85rem" }}
+                      >
+                        {img.title}
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
               </CardActionArea>
               {img.source && (
@@ -143,12 +156,15 @@ export default function FanartGallery() {
             <CloseIcon />
           </IconButton>
           {openImage && (
-            <Image
+            <img
               src={openImage}
               alt="Large view"
-              width={1200}
-              height={1200}
-              style={{ width: "100%", height: "auto", objectFit: "contain" }}
+              style={{
+                maxWidth: "100%",
+                height: "auto",
+                display: "block",
+                margin: "0 auto",
+              }}
             />
           )}
         </Box>
