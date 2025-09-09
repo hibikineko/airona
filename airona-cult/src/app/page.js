@@ -13,8 +13,8 @@ export default async function HomePage() {
     <main style={{ padding: "2rem" }}>
       {/* --- Keep your existing top hero/intro section --- */}
       <section style={{ marginBottom: "3rem" }}>
-        <h1>Welcome to Airona</h1>
-        <p>A community hub for guild members ✨</p>
+        <h1>Welcome to Airona Cult</h1>
+        <p>A community hub for everyone who loves and adores Airona ✨</p>
       </section>
 
       {/* --- Fanart Section --- */}

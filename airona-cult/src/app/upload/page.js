@@ -101,7 +101,7 @@ export default function UploadPage() {
           </Typography>
           {!isMember ? (
             <Typography color="error">
-              You must be a guild member to upload.
+              You must be a cultist to upload.
             </Typography>
           ) : (
             <Box
