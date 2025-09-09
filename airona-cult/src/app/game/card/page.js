@@ -34,9 +34,13 @@ export default function AironaMemory() {
   const [previewing, setPreviewing] = useState(false);
   const [previewCountdown, setPreviewCountdown] = useState(0);
 
+  const [scatterCountdown, setScatterCountdown] = useState(5);
+  const [positions, setPositions] = useState([]);
+
   const difficulties = {
     easy: { time: 120, moves: 40 },
     hard: { time: 60, moves: 25 },
+    nightmare: { time: 60, moves: 25 },
   };
 
   const startGame = (mode) => {
@@ -49,19 +53,23 @@ export default function AironaMemory() {
     setGameOver(false);
     setStarted(true);
 
+    // Initialize positions
+    setPositions(shuffled.map(() => ({ x: 0, y: 0 })));
+
     // show preview
     setPreviewing(true);
     setPreviewCountdown(5);
     setTimeLeft(difficulties[mode].time);
+
+    // Reset scatter countdown only for nightmare
+    if (mode === "nightmare") setScatterCountdown(5);
   };
 
   // Countdown for preview
   useEffect(() => {
     if (!previewing || previewCountdown <= 0) return;
     const t = setTimeout(() => setPreviewCountdown((c) => c - 1), 1000);
-    if (previewCountdown === 1) {
-      setPreviewing(false);
-    }
+    if (previewCountdown === 1) setPreviewing(false);
     return () => clearTimeout(t);
   }, [previewCountdown, previewing]);
 
@@ -76,6 +84,61 @@ export default function AironaMemory() {
     return () => clearTimeout(t);
   }, [timeLeft, started, gameOver, previewing]);
 
+  // Scatter countdown for nightmare difficulty only
+  useEffect(() => {
+    if (difficulty !== "nightmare" || !started || gameOver || previewing || matched.length === cards.length)
+      return;
+
+    const interval = setInterval(() => {
+      setScatterCountdown((c) => c - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [difficulty, started, gameOver, previewing, matched, cards]);
+
+  // Trigger scatter
+  useEffect(() => {
+    if (difficulty !== "nightmare") return;
+    if (scatterCountdown <= 0) {
+      scatterCards();
+      setScatterCountdown(5);
+    }
+  }, [scatterCountdown, difficulty]);
+
+  const scatterCards = () => {
+    setCards((prev) => {
+      const unmatchedIndexes = prev.map((c, i) => (matched.includes(i) ? null : i)).filter((i) => i !== null);
+      const shuffledIndexes = shuffle(unmatchedIndexes);
+
+      // Animate tiles
+      setPositions((oldPositions) =>
+        oldPositions.map((pos, i) => {
+          if (matched.includes(i)) return pos;
+          const newIndex = shuffledIndexes.indexOf(i);
+          return {
+            x: (newIndex - i) * 100,
+            y: Math.random() * 20 - 10,
+          };
+        })
+      );
+
+      // Update cards array order to match new positions
+      const newCards = [...prev];
+      for (let i = 0; i < unmatchedIndexes.length; i++) {
+        const from = unmatchedIndexes[i];
+        const to = shuffledIndexes[i];
+        [newCards[from], newCards[to]] = [newCards[to], newCards[from]];
+      }
+
+      // Reset positions after animation
+      setTimeout(() => {
+        setPositions((prev) => prev.map(() => ({ x: 0, y: 0 })));
+      }, 600);
+
+      return newCards;
+    });
+  };
+
   const handleFlip = (index) => {
     if (gameOver || previewing) return;
     if (flipped.includes(index) || flipped.length === 2) return;
@@ -89,6 +152,7 @@ export default function AironaMemory() {
 
       if (cards[first] === cards[second]) {
         setMatched((prev) => [...prev, first, second]);
+        if (difficulty === "nightmare") setScatterCountdown(5);
       }
 
       setTimeout(() => {
@@ -130,6 +194,9 @@ export default function AironaMemory() {
             <Button variant="contained" color="error" onClick={() => startGame("hard")}>
               Hard
             </Button>
+            <Button variant="contained" color="secondary" onClick={() => startGame("nightmare")}>
+              Nightmare
+            </Button>
           </Stack>
         </Stack>
       ) : (
@@ -141,7 +208,8 @@ export default function AironaMemory() {
               <strong style={{ color: timeLeft < 10 ? "red" : "inherit" }}>
                 {timeLeft}s
               </strong>{" "}
-              | Moves: {moves}/{difficulties[difficulty].moves}
+              | Moves: {moves}/{difficulties[difficulty].moves}{" "}
+              {difficulty === "nightmare" && <>| Scatter in: {scatterCountdown}s</>}
             </Typography>
           )}
 
@@ -168,8 +236,7 @@ export default function AironaMemory() {
               }}
             >
               {cards.map((card, i) => {
-                const isFlipped =
-                  previewing || flipped.includes(i) || matched.includes(i);
+                const isFlipped = previewing || flipped.includes(i) || matched.includes(i);
                 const isMatched = matched.includes(i);
                 return (
                   <Box key={i}>
@@ -182,9 +249,19 @@ export default function AironaMemory() {
                         aspectRatio: "1/1",
                         border: "none",
                         background: "transparent",
-                        cursor:
-                          gameOver || isMatched || previewing ? "default" : "pointer",
+                        cursor: gameOver || isMatched || previewing ? "default" : "pointer",
                         perspective: "1000px",
+                        position: "relative",
+                        transition: "transform 600ms ease",
+                        transform: `translate(${positions[i]?.x}px, ${positions[i]?.y}px)`,
+                        "& .matchedFront": {
+                          animation: isMatched ? "pulse 0.5s ease" : "none",
+                        },
+                        "@keyframes pulse": {
+                          "0%": { transform: "scale(1)" },
+                          "50%": { transform: "scale(1.2)" },
+                          "100%": { transform: "scale(1)" },
+                        },
                       }}
                     >
                       <Box
@@ -194,9 +271,7 @@ export default function AironaMemory() {
                           position: "relative",
                           transformStyle: "preserve-3d",
                           transition: "transform 600ms",
-                          transform: isFlipped
-                            ? "rotateY(180deg)"
-                            : "rotateY(0deg)",
+                          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
                         }}
                       >
                         {/* Back */}
@@ -209,7 +284,7 @@ export default function AironaMemory() {
                             alignItems: "center",
                             justifyContent: "center",
                             borderRadius: 1,
-                            background: "linear-gradient(135deg, #0b1a12, #154c1a)", // darker gradient
+                            background: "linear-gradient(135deg, #0b1a12, #154c1a)",
                             backgroundImage:
                               "repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 10px, transparent 10px 20px)",
                             boxShadow: "inset 0 0 14px rgba(0,0,0,0.75)",
@@ -241,6 +316,7 @@ export default function AironaMemory() {
                             borderRadius: 1,
                             backgroundColor: "#ffffff",
                           }}
+                          className="matchedFront"
                         >
                           <Box sx={{ position: "relative", width: "70%", height: "70%" }}>
                             <Image
