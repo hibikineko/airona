@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Image from "next/image";
 import {
   Box,
   Container,
@@ -9,7 +8,6 @@ import {
   Grid,
   Card,
   CardActionArea,
-  CardContent,
   CircularProgress,
   Button,
   Dialog,
@@ -24,7 +22,7 @@ export default function ScreenshotGallery() {
   const [loading, setLoading] = useState(false);
   const [openImage, setOpenImage] = useState(null);
 
-  const PAGE_SIZE = 4; // 4 images per page
+  const PAGE_SIZE = 8; // load more per page so it fills 4x2 grid faster
 
   const loadMore = useCallback(
     async (pageIndex) => {
@@ -55,25 +53,42 @@ export default function ScreenshotGallery() {
   }, [loadMore]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
+    <Container maxWidth="xl" sx={{ py: 6 }}>
       <Typography variant="h3" align="center" gutterBottom>
         📸 Screenshot Gallery
       </Typography>
 
-      <Grid container spacing={3} justifyContent="center">
+      <Grid container spacing={2} justifyContent="center">
         {items.map((img) => (
-          <Grid item key={img.id}>
-            <Card sx={{ width: 500, height: 400, borderRadius: 2, overflow: "hidden", boxShadow: 3 }}>
-              <CardActionArea
-                sx={{ width: "100%", height: "100%" }}
-                onClick={() => setOpenImage(img.image_url)}
-              >
-                <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
-                  <Image
+          <Grid
+            item
+            key={img.id}
+            xs={12}
+            sm={6}
+            md={4}
+            lg={3}
+            sx={{ display: "flex", justifyContent: "center" }}
+          >
+            <Card
+              sx={{
+                width: "100%",
+                maxWidth: 320,
+                borderRadius: 2,
+                overflow: "hidden",
+                boxShadow: 3,
+              }}
+            >
+              <CardActionArea onClick={() => setOpenImage(img.image_url)}>
+                <Box sx={{ position: "relative", width: "100%", height: 220 }}>
+                  <img
                     src={img.image_url}
                     alt={img.title || "Screenshot"}
-                    fill
-                    style={{ objectFit: "cover" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
                   />
                   <Box
                     sx={{
@@ -85,7 +100,10 @@ export default function ScreenshotGallery() {
                       p: 0.5,
                     }}
                   >
-                    <Typography variant="subtitle1">
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 500, fontSize: "0.85rem" }}
+                    >
                       {img.title || "Untitled"}
                     </Typography>
                   </Box>
@@ -107,25 +125,30 @@ export default function ScreenshotGallery() {
       </Box>
 
       {/* Lightbox */}
-      <Dialog
-        open={!!openImage}
-        onClose={() => setOpenImage(null)}
-        maxWidth="lg"
-      >
-        <Box sx={{ position: 'relative', bgcolor: 'black' }}>
+      <Dialog open={!!openImage} onClose={() => setOpenImage(null)} maxWidth="lg">
+        <Box sx={{ position: "relative", bgcolor: "black" }}>
           <IconButton
-            sx={{ position: 'absolute', top: 8, right: 8, color: 'white', zIndex: 10 }}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: "white",
+              zIndex: 10,
+            }}
             onClick={() => setOpenImage(null)}
           >
             <CloseIcon />
           </IconButton>
           {openImage && (
-            <Image
+            <img
               src={openImage}
               alt="Large view"
-              width={1200}
-              height={1200}
-              style={{ width: "100%", height: "auto", objectFit: "contain" }}
+              style={{
+                maxWidth: "100%",
+                height: "auto",
+                display: "block",
+                margin: "0 auto",
+              }}
             />
           )}
         </Box>
