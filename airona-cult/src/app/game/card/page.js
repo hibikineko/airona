@@ -179,33 +179,7 @@ export default function AironaMemory() {
     }
   }, [matched, moves, cards, difficulty, started]);
 
-  // Frosted glass style
-  const frostedGlass = (dark, light) => ({
-    borderRadius: 1,
-    background: theme.palette.mode === "dark" ? dark : light,
-    backdropFilter: "blur(10px)",
-    border: "1px solid rgba(255, 255, 255, 0.15)",
-    position: "relative",
-    overflow: "hidden",
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      top: 0,
-      left: "-150%",
-      width: "50%",
-      height: "100%",
-      background:
-        "linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%)",
-      transform: "skewX(-25deg)",
-    },
-    "&:hover::before, &.shimmer::before": {
-      animation: "shimmer 1.5s ease-in-out",
-    },
-    "@keyframes shimmer": {
-      "0%": { left: "-150%" },
-      "100%": { left: "150%" },
-    },
-  });
+  
 
   return (
     <Container maxWidth="lg" sx={{ py: 6, textAlign: "center" }}>
@@ -252,16 +226,27 @@ export default function AironaMemory() {
             }}
           >
             <Box
-              sx={{
-                display: "grid",
-                gap: 1.5,
-                gridTemplateColumns: {
-                  xs: "repeat(4, 1fr)",
-                  sm: "repeat(5, 1fr)",
-                  md: "repeat(5, 1fr)",
-                },
-              }}
-            >
+                sx={{
+                    display: "grid",
+                    gap: { xs: 0.1, sm: 1, md: 1.5 }, // 📱 tighter spacing on mobile
+                    gridTemplateColumns: {
+                    xs: "repeat(4, 1fr)",
+                    sm: "repeat(5, 1fr)",
+                    md: "repeat(5, 1fr)",
+                    },
+                    p: 2,
+                    border: "3px solid rgba(255, 255, 255, 0.2)", // 🌟 outer border
+                    borderRadius: 1,
+                   background: theme.palette.mode === "dark"
+                    ? "linear-gradient(145deg, rgba(90,60,140,0.35), rgba(30,30,50,0.35))"
+                    : "linear-gradient(145deg, rgba(200,180,250,0.5), rgba(240,230,255,0.5))",
+                    backdropFilter: "blur(10px)",
+                    boxShadow: theme.palette.mode === "dark"
+                    ? "0 4px 20px rgba(0,0,0,0.7)"
+                    : "0 4px 20px rgba(0,0,0,0.15)",
+                }}
+                >
+
               {cards.map((card, i) => {
                 const isFlipped = previewing || flipped.includes(i) || matched.includes(i);
                 const isMatched = matched.includes(i);
@@ -301,16 +286,33 @@ export default function AironaMemory() {
                                 borderRadius: 1,
                                 background: theme.palette.mode === "dark"
                                 ? "rgba(120, 90, 180, 0.25)"   // 🌙 purple glass for back in dark mode
-                                : "rgba(200, 180, 250, 0.6)", // 🌞 lighter purple glass in light mode
-                                backdropFilter: "blur(10px)",
-                                border: "1px solid rgba(255,255,255,0.2)",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
-                                inset: 0,
+                                : "rgba(200, 180, 250, 0.45)", // 🌞 light purple glass in light mode
+                                backdropFilter: "blur(12px) saturate(160%)",
+                                border: "1px solid rgba(255,255,255,0.25)",
+                                boxShadow:
+                                theme.palette.mode === "dark"
+                                    ? "inset 0 1px 4px rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.6)"
+                                    : "inset 0 1px 4px rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.15)",
                                 position: "absolute",
+                                inset: 0,
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 backfaceVisibility: "hidden",
+                                overflow: "hidden",
+
+                                "&::after": {
+                                content: '""',
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                width: "100%",
+                                height: "100%",
+                                background:
+                                    "linear-gradient(145deg, rgba(255,255,255,0.25) 0%, transparent 60%)",
+                                opacity: 0.4,
+                                pointerEvents: "none",
+                                },
                             }}
                             >
                             <Box sx={{ width: "60%", height: "60%", position: "relative" }}>
@@ -328,18 +330,35 @@ export default function AironaMemory() {
                             sx={{
                                 borderRadius: 1,
                                 background: theme.palette.mode === "dark"
-                                ? "rgba(255,255,255,0.08)"    // 🌙 smoky neutral glass for front
-                                : "rgba(255,255,255,0.6)",   // 🌞 frosty white glass in light mode
-                                backdropFilter: "blur(10px)",
-                                border: "1px solid rgba(255,255,255,0.2)",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-                                inset: 0,
+                                ? "rgba(40,40,50,0.35)" // 🌙 smoky glass for front
+                                : "rgba(255,255,255,0.55)", // 🌞 frosty white glass
+                                backdropFilter: "blur(12px) saturate(160%)",
+                                border: "1px solid rgba(255,255,255,0.25)",
+                                boxShadow:
+                                theme.palette.mode === "dark"
+                                    ? "inset 0 1px 4px rgba(255,255,255,0.08), 0 4px 10px rgba(0,0,0,0.5)"
+                                    : "inset 0 1px 4px rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.15)",
                                 position: "absolute",
+                                inset: 0,
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 backfaceVisibility: "hidden",
                                 transform: "rotateY(180deg)",
+                                overflow: "hidden",
+
+                                "&::after": {
+                                content: '""',
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                width: "100%",
+                                height: "100%",
+                                background:
+                                    "linear-gradient(145deg, rgba(255,255,255,0.2) 0%, transparent 70%)",
+                                opacity: 0.3,
+                                pointerEvents: "none",
+                                },
                             }}
                             >
                             <Box sx={{ width: "70%", height: "70%", position: "relative" }}>
@@ -351,6 +370,7 @@ export default function AironaMemory() {
                                 />
                             </Box>
                             </Box>
+
 
                             </Box>
 
