@@ -3,44 +3,69 @@
 import { useState } from "react";
 import Slider from "react-slick";
 import Image from "next/image";
-import { Card, CardContent, Typography, Box, Dialog, IconButton } from "@mui/material";
-import CloseIcon from '@mui/icons-material/Close';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Dialog,
+  IconButton,
+  useMediaQuery,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 export default function ContentCarousel({ title, items, type }) {
-  const [openImage, setOpenImage] = useState(null); // holds image URL to show in dialog
+  const [openImage, setOpenImage] = useState(null);
+
+  // detect screen size for better aspect ratio
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   const settings = {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: isMobile ? 1 : 3,
     slidesToScroll: 1,
     centerMode: false,
-    responsive: [
-      { breakpoint: 1024, settings: { slidesToShow: 2 } },
-      { breakpoint: 600, settings: { slidesToShow: 1 } },
-    ],
   };
 
   return (
     <div style={{ marginBottom: "2rem" }}>
-      <Typography variant="h5" gutterBottom>{title}</Typography>
+      <Typography variant="h5" gutterBottom>
+        {title}
+      </Typography>
       <Slider {...settings}>
         {items.map((item) => (
-          <Box key={item.id} px={1}>
-            <Card sx={{ height: "100%", display: "flex", flexDirection: "column", cursor: "pointer" }}>
+          <Box key={item.id} px={isMobile ? 0.5 : 1}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                cursor: "pointer",
+              }}
+            >
               {item.image_url && (
                 <Box
-                  sx={{ position: "relative", width: "100%", height: 0, paddingTop: "62.5%" }}
+                  sx={{
+                    position: "relative",
+                    width: "100%",
+                    height: 0,
+                    paddingTop: isMobile ? "100%" : "70%", // bigger, square-ish on mobile
+                  }}
                   onClick={() => setOpenImage(item.image_url)}
                 >
                   <Image
                     src={item.image_url}
                     alt={item.title || "content"}
                     fill
-                    style={{ objectFit: "cover", objectPosition: "center" }}
+                    style={{
+                      objectFit: "cover",
+                      objectPosition: "center",
+                      borderRadius: "8px",
+                    }}
                   />
                   <Box
                     sx={{
@@ -53,7 +78,9 @@ export default function ContentCarousel({ title, items, type }) {
                       p: 0.5,
                     }}
                   >
-                    <Typography variant="subtitle2">{item.title || "Untitled"}</Typography>
+                    <Typography variant="subtitle2">
+                      {item.title || "Untitled"}
+                    </Typography>
                   </Box>
                 </Box>
               )}
@@ -67,7 +94,12 @@ export default function ContentCarousel({ title, items, type }) {
                   {item.source ? (
                     <Typography variant="caption">
                       Source:{" "}
-                      <a href={item.source} target="_blank" rel="noopener noreferrer" style={{ color: "#1976d2" }}>
+                      <a
+                        href={item.source}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#1976d2" }}
+                      >
                         {item.source}
                       </a>
                     </Typography>
@@ -82,14 +114,16 @@ export default function ContentCarousel({ title, items, type }) {
       </Slider>
 
       {/* Image Lightbox */}
-      <Dialog
-        open={!!openImage}
-        onClose={() => setOpenImage(null)}
-        maxWidth="lg"
-      >
-        <Box sx={{ position: 'relative' }}>
+      <Dialog open={!!openImage} onClose={() => setOpenImage(null)} maxWidth="lg">
+        <Box sx={{ position: "relative" }}>
           <IconButton
-            sx={{ position: 'absolute', top: 8, right: 8, color: 'white', zIndex: 10 }}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: "white",
+              zIndex: 10,
+            }}
             onClick={() => setOpenImage(null)}
           >
             <CloseIcon />
@@ -100,7 +134,11 @@ export default function ContentCarousel({ title, items, type }) {
               alt="Large view"
               width={1200}
               height={1200}
-              style={{ width: "100%", height: "auto", objectFit: "contain" }}
+              style={{
+                width: "100%",
+                height: "auto",
+                objectFit: "contain",
+              }}
             />
           )}
         </Box>
