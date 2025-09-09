@@ -39,7 +39,7 @@ export async function POST(req) {
       title,
       source,
       image_url: imageUrl,
-      author: session.user.name, // fanart.author is text
+      author: session.user.id, // ✅ now matches screenshot (id / bigint)
     },
   ]);
 

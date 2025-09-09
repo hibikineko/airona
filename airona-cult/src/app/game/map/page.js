@@ -96,6 +96,7 @@ export default function GamePage() {
                     src="/map/asterplain.jpg"
                     alt="Map"
                     style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                    loading="eager"
                   />
 
                   {guess && (

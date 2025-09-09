@@ -11,12 +11,16 @@ import {
   Card,
   CardContent,
   Box,
+  CircularProgress,
 } from "@mui/material";
+import { useRouter } from "next/navigation"; 
 import { supabase } from "@/lib/supabaseClient";
 
 export default function UploadPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [isMember, setIsMember] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     type: "fanart", // fanart, posts, screenshot
     title: "",
@@ -52,9 +56,11 @@ export default function UploadPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isMember) {
-        alert("You must be a guild member to upload!");
-        return;
+      alert("You must be a guild member to upload!");
+      return;
     }
+
+    setLoading(true); // start loader
 
     const formData = new FormData();
     formData.append("title", form.title);
@@ -64,21 +70,25 @@ export default function UploadPage() {
     if (form.type === "posts") formData.append("text", form.text);
 
     const res = await fetch(`/api/${form.type}/add`, {
-        method: "POST",
-        body: formData,
+      method: "POST",
+      body: formData,
     });
 
+    setLoading(false); // stop loader
+
     if (!res.ok) {
-        const err = await res.json();
-        console.error(err);
-        alert("Failed to upload!");
-        return;
+      const err = await res.json();
+      console.error(err);
+      alert("Failed to upload!");
+      return;
     }
 
     alert("Upload successful!");
     setForm({ type: "fanart", title: "", text: "", source: "", image: null });
-    };
 
+    // redirect to home after short delay
+    router.push("/");
+  };
 
   if (status === "loading") return <p>Loading...</p>;
 
@@ -139,7 +149,7 @@ export default function UploadPage() {
                 />
               )}
 
-              <Button variant="outlined" component="label">
+              <Button variant="outlined" component="label" disabled={loading}>
                 Select Image
                 <input type="file" hidden name="image" onChange={handleChange} />
               </Button>
@@ -150,8 +160,14 @@ export default function UploadPage() {
                 </Typography>
               )}
 
-              <Button type="submit" variant="contained" color="primary">
-                Upload
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={loading}
+                startIcon={loading && <CircularProgress size={20} />}
+              >
+                {loading ? "Uploading..." : "Upload"}
               </Button>
             </Box>
           )}
