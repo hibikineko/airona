@@ -152,7 +152,7 @@ export default function AironaMemory() {
               mx: "auto",
               backgroundColor: "#fafafa",
               p: 2,
-              borderRadius: 3,
+              borderRadius: 2,
               boxShadow: 3,
             }}
           >
@@ -208,7 +208,7 @@ export default function AironaMemory() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            borderRadius: 2,
+                            borderRadius: 1,
                             background: "linear-gradient(135deg, #0b1a12, #154c1a)", // darker gradient
                             backgroundImage:
                               "repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 10px, transparent 10px 20px)",
@@ -238,7 +238,7 @@ export default function AironaMemory() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            borderRadius: 2,
+                            borderRadius: 1,
                             backgroundColor: "#ffffff",
                           }}
                         >
