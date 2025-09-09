@@ -12,15 +12,19 @@ import {
   CardContent,
   CircularProgress,
   Button,
+  Dialog,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { fetchScreenshots } from "@/lib/fetchContent";
 
 export default function ScreenshotGallery() {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [openImage, setOpenImage] = useState(null);
 
-  const PAGE_SIZE = 12;
+  const PAGE_SIZE = 4; // 4 images per page
 
   const loadMore = useCallback(
     async (pageIndex) => {
@@ -29,13 +33,14 @@ export default function ScreenshotGallery() {
       try {
         const newItems = await fetchScreenshots(pageIndex, PAGE_SIZE);
 
-        if (pageIndex === 0) {
-          setItems(newItems);
-        } else {
-          setItems((prev) => [...prev, ...newItems]);
+        if (newItems.length > 0) {
+          if (pageIndex === 0) {
+            setItems(newItems);
+          } else {
+            setItems((prev) => [...prev, ...newItems]);
+          }
+          setPage(pageIndex);
         }
-
-        setPage(pageIndex);
       } catch (err) {
         console.error("Failed to fetch screenshots:", err);
       } finally {
@@ -57,22 +62,13 @@ export default function ScreenshotGallery() {
 
       <Grid container spacing={3} justifyContent="center">
         {items.map((img) => (
-          <Grid
-            item
-            key={img.id}
-            sx={{
-              flexGrow: 1,
-              minWidth: 400, // minimum width per card
-            }}
-          >
-            <Card sx={{ height: "100%", borderRadius: 2, overflow: "hidden", boxShadow: 3 }}>
+          <Grid item key={img.id}>
+            <Card sx={{ width: 500, height: 400, borderRadius: 2, overflow: "hidden", boxShadow: 3 }}>
               <CardActionArea
-                sx={{
-                  height: "100%",
-                  "&:hover .imageOverlay": { opacity: 0.2 },
-                }}
+                sx={{ width: "100%", height: "100%" }}
+                onClick={() => setOpenImage(img.image_url)}
               >
-                <Box sx={{ position: "relative", width: "100%", height: 250 }}>
+                <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
                   <Image
                     src={img.image_url}
                     alt={img.title || "Screenshot"}
@@ -80,24 +76,20 @@ export default function ScreenshotGallery() {
                     style={{ objectFit: "cover" }}
                   />
                   <Box
-                    className="imageOverlay"
                     sx={{
                       position: "absolute",
-                      top: 0,
-                      left: 0,
+                      bottom: 0,
                       width: "100%",
-                      height: "100%",
-                      bgcolor: "black",
-                      opacity: 0,
-                      transition: "opacity 0.3s",
+                      bgcolor: "rgba(0,0,0,0.4)",
+                      color: "#fff",
+                      p: 0.5,
                     }}
-                  />
+                  >
+                    <Typography variant="subtitle1">
+                      {img.title || "Untitled"}
+                    </Typography>
+                  </Box>
                 </Box>
-                <CardContent>
-                  <Typography variant="subtitle1">
-                    {img.title || "Untitled"}
-                  </Typography>
-                </CardContent>
               </CardActionArea>
             </Card>
           </Grid>
@@ -113,6 +105,31 @@ export default function ScreenshotGallery() {
           {loading ? <CircularProgress size={24} color="inherit" /> : "Load More"}
         </Button>
       </Box>
+
+      {/* Lightbox */}
+      <Dialog
+        open={!!openImage}
+        onClose={() => setOpenImage(null)}
+        maxWidth="lg"
+      >
+        <Box sx={{ position: 'relative', bgcolor: 'black' }}>
+          <IconButton
+            sx={{ position: 'absolute', top: 8, right: 8, color: 'white', zIndex: 10 }}
+            onClick={() => setOpenImage(null)}
+          >
+            <CloseIcon />
+          </IconButton>
+          {openImage && (
+            <Image
+              src={openImage}
+              alt="Large view"
+              width={1200}
+              height={1200}
+              style={{ width: "100%", height: "auto", objectFit: "contain" }}
+            />
+          )}
+        </Box>
+      </Dialog>
     </Container>
   );
 }
