@@ -60,7 +60,7 @@ export default function AironaMemory() {
     if (!previewing || previewCountdown <= 0) return;
     const t = setTimeout(() => setPreviewCountdown((c) => c - 1), 1000);
     if (previewCountdown === 1) {
-      setPreviewing(false); // stop preview after countdown ends
+      setPreviewing(false);
     }
     return () => clearTimeout(t);
   }, [previewCountdown, previewing]);
@@ -161,9 +161,9 @@ export default function AironaMemory() {
                 display: "grid",
                 gap: 1.5,
                 gridTemplateColumns: {
-                  xs: "repeat(4, 1fr)", // smaller tiles for phones
-                  sm: "repeat(5, 1fr)", // tablets
-                  md: "repeat(5, 1fr)", // desktop
+                  xs: "repeat(4, 1fr)",
+                  sm: "repeat(5, 1fr)",
+                  md: "repeat(5, 1fr)",
                 },
               }}
             >
@@ -209,7 +209,10 @@ export default function AironaMemory() {
                             alignItems: "center",
                             justifyContent: "center",
                             borderRadius: 2,
-                            backgroundColor: "#f5f5f5",
+                            background: "linear-gradient(135deg, #0b1a12, #154c1a)", // darker gradient
+                            backgroundImage:
+                              "repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 10px, transparent 10px 20px)",
+                            boxShadow: "inset 0 0 14px rgba(0,0,0,0.75)",
                           }}
                         >
                           <Box sx={{ position: "relative", width: "60%", height: "60%" }}>
@@ -217,10 +220,14 @@ export default function AironaMemory() {
                               src="/airona/airona_logo.png"
                               alt="card back"
                               fill
-                              style={{ objectFit: "contain" }}
+                              style={{
+                                objectFit: "contain",
+                                filter: "drop-shadow(0 0 5px rgba(0,0,0,0.6))",
+                              }}
                             />
                           </Box>
                         </Box>
+
                         {/* Front */}
                         <Box
                           sx={{
