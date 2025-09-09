@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Box, Container, Typography, Button, Stack } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Stack,
+  useTheme,
+} from "@mui/material";
 
 const stickers = [
   "airona1.png",
@@ -22,6 +29,8 @@ function shuffle(array) {
 }
 
 export default function AironaMemory() {
+  const theme = useTheme();
+
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState([]);
@@ -53,19 +62,16 @@ export default function AironaMemory() {
     setGameOver(false);
     setStarted(true);
 
-    // Initialize positions
     setPositions(shuffled.map(() => ({ x: 0, y: 0 })));
 
-    // show preview
     setPreviewing(true);
     setPreviewCountdown(5);
     setTimeLeft(difficulties[mode].time);
 
-    // Reset scatter countdown only for nightmare
     if (mode === "nightmare") setScatterCountdown(5);
   };
 
-  // Countdown for preview
+  // Preview countdown
   useEffect(() => {
     if (!previewing || previewCountdown <= 0) return;
     const t = setTimeout(() => setPreviewCountdown((c) => c - 1), 1000);
@@ -73,7 +79,7 @@ export default function AironaMemory() {
     return () => clearTimeout(t);
   }, [previewCountdown, previewing]);
 
-  // Timer after preview ends
+  // Timer
   useEffect(() => {
     if (!started || gameOver || previewing) return;
     if (timeLeft <= 0) {
@@ -84,7 +90,7 @@ export default function AironaMemory() {
     return () => clearTimeout(t);
   }, [timeLeft, started, gameOver, previewing]);
 
-  // Scatter countdown for nightmare difficulty only
+  // Scatter for nightmare
   useEffect(() => {
     if (difficulty !== "nightmare" || !started || gameOver || previewing || matched.length === cards.length)
       return;
@@ -96,7 +102,6 @@ export default function AironaMemory() {
     return () => clearInterval(interval);
   }, [difficulty, started, gameOver, previewing, matched, cards]);
 
-  // Trigger scatter
   useEffect(() => {
     if (difficulty !== "nightmare") return;
     if (scatterCountdown <= 0) {
@@ -107,10 +112,11 @@ export default function AironaMemory() {
 
   const scatterCards = () => {
     setCards((prev) => {
-      const unmatchedIndexes = prev.map((c, i) => (matched.includes(i) ? null : i)).filter((i) => i !== null);
+      const unmatchedIndexes = prev
+        .map((c, i) => (matched.includes(i) ? null : i))
+        .filter((i) => i !== null);
       const shuffledIndexes = shuffle(unmatchedIndexes);
 
-      // Animate tiles
       setPositions((oldPositions) =>
         oldPositions.map((pos, i) => {
           if (matched.includes(i)) return pos;
@@ -122,7 +128,6 @@ export default function AironaMemory() {
         })
       );
 
-      // Update cards array order to match new positions
       const newCards = [...prev];
       for (let i = 0; i < unmatchedIndexes.length; i++) {
         const from = unmatchedIndexes[i];
@@ -130,7 +135,6 @@ export default function AironaMemory() {
         [newCards[from], newCards[to]] = [newCards[to], newCards[from]];
       }
 
-      // Reset positions after animation
       setTimeout(() => {
         setPositions((prev) => prev.map(() => ({ x: 0, y: 0 })));
       }, 600);
@@ -161,7 +165,6 @@ export default function AironaMemory() {
     }
   };
 
-  // Win/Lose check
   useEffect(() => {
     if (cards.length > 0 && matched.length === cards.length) {
       setGameOver(true);
@@ -175,6 +178,34 @@ export default function AironaMemory() {
       setGameOver(true);
     }
   }, [matched, moves, cards, difficulty, started]);
+
+  // Frosted glass style
+  const frostedGlass = (dark, light) => ({
+    borderRadius: 1,
+    background: theme.palette.mode === "dark" ? dark : light,
+    backdropFilter: "blur(10px)",
+    border: "1px solid rgba(255, 255, 255, 0.15)",
+    position: "relative",
+    overflow: "hidden",
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: "-150%",
+      width: "50%",
+      height: "100%",
+      background:
+        "linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%)",
+      transform: "skewX(-25deg)",
+    },
+    "&:hover::before, &.shimmer::before": {
+      animation: "shimmer 1.5s ease-in-out",
+    },
+    "@keyframes shimmer": {
+      "0%": { left: "-150%" },
+      "100%": { left: "150%" },
+    },
+  });
 
   return (
     <Container maxWidth="lg" sx={{ py: 6, textAlign: "center" }}>
@@ -201,7 +232,6 @@ export default function AironaMemory() {
         </Stack>
       ) : (
         <>
-          {/* Stats */}
           {!previewing && (
             <Typography variant="h6" mb={2}>
               Time Left:{" "}
@@ -213,15 +243,12 @@ export default function AironaMemory() {
             </Typography>
           )}
 
-          {/* Grid */}
           <Box
             sx={{
               maxWidth: 950,
               mx: "auto",
-              backgroundColor: "#fafafa",
               p: 2,
               borderRadius: 2,
-              boxShadow: 3,
             }}
           >
             <Box
@@ -238,6 +265,7 @@ export default function AironaMemory() {
               {cards.map((card, i) => {
                 const isFlipped = previewing || flipped.includes(i) || matched.includes(i);
                 const isMatched = matched.includes(i);
+
                 return (
                   <Box key={i}>
                     <Box
@@ -254,80 +282,78 @@ export default function AironaMemory() {
                         position: "relative",
                         transition: "transform 600ms ease",
                         transform: `translate(${positions[i]?.x}px, ${positions[i]?.y}px)`,
-                        "& .matchedFront": {
-                          animation: isMatched ? "pulse 0.5s ease" : "none",
-                        },
-                        "@keyframes pulse": {
-                          "0%": { transform: "scale(1)" },
-                          "50%": { transform: "scale(1.2)" },
-                          "100%": { transform: "scale(1)" },
-                        },
                       }}
                     >
-                      <Box
-                        sx={{
-                          width: "100%",
-                          height: "100%",
-                          position: "relative",
-                          transformStyle: "preserve-3d",
-                          transition: "transform 600ms",
-                          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-                        }}
-                      >
-                        {/* Back */}
+                      
                         <Box
-                          sx={{
-                            position: "absolute",
-                            inset: 0,
-                            backfaceVisibility: "hidden",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderRadius: 1,
-                            background: "linear-gradient(135deg, #0b1a12, #154c1a)",
-                            backgroundImage:
-                              "repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 10px, transparent 10px 20px)",
-                            boxShadow: "inset 0 0 14px rgba(0,0,0,0.75)",
-                          }}
-                        >
-                          <Box sx={{ position: "relative", width: "60%", height: "60%" }}>
-                            <Image
-                              src="/airona/airona_logo.png"
-                              alt="card back"
-                              fill
-                              style={{
-                                objectFit: "contain",
-                                filter: "drop-shadow(0 0 5px rgba(0,0,0,0.6))",
-                              }}
-                            />
-                          </Box>
-                        </Box>
+                            sx={{
+                                width: "100%",
+                                height: "100%",
+                                position: "relative",
+                                transformStyle: "preserve-3d",
+                                transition: "transform 600ms",
+                                transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                            }}
+                            >
+                            {/* Back (Logo) */}
+                            <Box
+                            sx={{
+                                borderRadius: 1,
+                                background: theme.palette.mode === "dark"
+                                ? "rgba(120, 90, 180, 0.25)"   // 🌙 purple glass for back in dark mode
+                                : "rgba(200, 180, 250, 0.6)", // 🌞 lighter purple glass in light mode
+                                backdropFilter: "blur(10px)",
+                                border: "1px solid rgba(255,255,255,0.2)",
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                                inset: 0,
+                                position: "absolute",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                backfaceVisibility: "hidden",
+                            }}
+                            >
+                            <Box sx={{ width: "60%", height: "60%", position: "relative" }}>
+                                <Image
+                                src="/airona/airona_logo.png"
+                                alt="card back"
+                                fill
+                                style={{ objectFit: "contain" }}
+                                />
+                            </Box>
+                            </Box>
 
-                        {/* Front */}
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            inset: 0,
-                            backfaceVisibility: "hidden",
-                            transform: "rotateY(180deg)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderRadius: 1,
-                            backgroundColor: "#ffffff",
-                          }}
-                          className="matchedFront"
-                        >
-                          <Box sx={{ position: "relative", width: "70%", height: "70%" }}>
-                            <Image
-                              src={`/airona/${card}`}
-                              alt="sticker"
-                              fill
-                              style={{ objectFit: "contain" }}
-                            />
-                          </Box>
-                        </Box>
-                      </Box>
+                            {/* Front (Sticker) */}
+                            <Box
+                            sx={{
+                                borderRadius: 1,
+                                background: theme.palette.mode === "dark"
+                                ? "rgba(255,255,255,0.08)"    // 🌙 smoky neutral glass for front
+                                : "rgba(255,255,255,0.6)",   // 🌞 frosty white glass in light mode
+                                backdropFilter: "blur(10px)",
+                                border: "1px solid rgba(255,255,255,0.2)",
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                                inset: 0,
+                                position: "absolute",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                backfaceVisibility: "hidden",
+                                transform: "rotateY(180deg)",
+                            }}
+                            >
+                            <Box sx={{ width: "70%", height: "70%", position: "relative" }}>
+                                <Image
+                                src={`/airona/${card}`}
+                                alt="sticker"
+                                fill
+                                style={{ objectFit: "contain" }}
+                                />
+                            </Box>
+                            </Box>
+
+                            </Box>
+
                     </Box>
                   </Box>
                 );
@@ -335,7 +361,6 @@ export default function AironaMemory() {
             </Box>
           </Box>
 
-          {/* Preview countdown overlay */}
           {previewing && (
             <Box mt={3}>
               <Typography variant="h4" color="secondary">
@@ -344,7 +369,6 @@ export default function AironaMemory() {
             </Box>
           )}
 
-          {/* Game over / win */}
           {gameOver && (
             <Box mt={4}>
               {matched.length === cards.length ? (

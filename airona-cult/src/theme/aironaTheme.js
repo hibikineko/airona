@@ -7,7 +7,7 @@ const getAironaTheme = (mode) =>
       mode,
       ...(mode === "light"
         ? {
-            // 🌞 LIGHT MODE COLORS
+            // 🌞 LIGHT MODE COLORS with subtle purple tint
             primary: {
               main: "#A6D86C", // Airona green
               light: "#C2E89A",
@@ -19,8 +19,8 @@ const getAironaTheme = (mode) =>
               contrastText: "#1C1C1C",
             },
             background: {
-              default: "#F5F5F5",
-              paper: "#FFFFFF",
+              default: "#ECE4F5", // slightly darker purple-tinted background
+              paper: "#F3EAFB", // paper also matches with subtle tint
             },
             text: {
               primary: "#1C1C1C",
@@ -28,15 +28,15 @@ const getAironaTheme = (mode) =>
             },
           }
         : {
-            // 🌙 DARK MODE COLORS
+            // 🌙 DARK MODE COLORS (unchanged)
             primary: {
-              main: "#8DC262", // darker green for contrast
+              main: "#8DC262",
               light: "#A6D86C",
               dark: "#5C8138",
               contrastText: "#FFFFFF",
             },
             secondary: {
-              main: "#B09BEF", // muted purple
+              main: "#B09BEF",
               contrastText: "#FFFFFF",
             },
             background: {
