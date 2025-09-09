@@ -1,3 +1,7 @@
+html {
+  font-size: 16px; /* ensures rem units scale consistently */
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
