@@ -13,6 +13,7 @@ export async function fetchFanart(page = 0, pageSize = 12) {
     .range(from, to);
 
   if (error) throw new Error(error.message);
+  console.log('fanart data:', data);
   return data;
 }
 
