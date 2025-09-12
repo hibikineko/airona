@@ -86,7 +86,7 @@ const predefinedThemes = [
       backgroundLight: "#ffd6e8",
       backgroundDark: "#662255",
       textLight: "#660033",
-      textDark: "#ffffff", // white text for dark mode
+      textDark: "#ffffff", 
       borderLight: "2px solid #ff99cc",
       borderDark: "2px solid #cc3399",
     },
@@ -104,7 +104,7 @@ const predefinedThemes = [
       },
       dark: {
         selected: { bg: "#cc3399", color: "#ffffff", hover: "#ff66aa" },
-        unselected: { bg: "#662255", color: "#ffffff", hover: "#cc3399" }, // white text
+        unselected: { bg: "#662255", color: "#ffffff", hover: "#cc3399" },
       },
     },
   },
@@ -137,7 +137,7 @@ const predefinedThemes = [
       },
       dark: {
         selected: { bg: "#3366cc", color: "#ffffff", hover: "#6699ff" },
-        unselected: { bg: "#223366", color: "#ffffff", hover: "#3366cc" }, // white text
+        unselected: { bg: "#223366", color: "#ffffff", hover: "#3366cc" },
       },
     },
   },
@@ -473,7 +473,7 @@ export default function GuildCardPage() {
         <Box sx={{ width: 360, p: 2 }}>
           <Typography variant="h6" mb={2}>Card Configuration</Typography>
           <FormControlLabel control={<Switch checked={frosted} onChange={(e) => setFrosted(e.target.checked)} />} label="Enable Frosted Glass" />
-          // In Drawer JSX
+         
             <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Predefined Theme</InputLabel>
             <Select
