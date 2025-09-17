@@ -106,8 +106,7 @@ export default function GuildPage() {
             Here, we follow her teachings of chaos, curiosity, and
             coin-collecting glory.
             <br />
-            Whether you’re grinding dailies or shouting{" "}
-            <em>“PRAISE AIRONA!!”</em> in guild chat, you’ll fit right in.
+            Whether you’re grinding dailies or shouting <em>&quot;PRAISE AIRONA!!&quot;</em> in guild chat, you’ll fit right in.
           </Typography>
         </CardContent>
       </Card>

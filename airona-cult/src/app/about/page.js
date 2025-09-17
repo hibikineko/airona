@@ -71,7 +71,7 @@ export default function AboutPage() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h2" gutterBottom>
-            🌸 Why "Airona"?
+            🌸 Why {"\"Airona\""}?
           </Typography>
           <Typography>
             Airona is our goddess!{" "}
