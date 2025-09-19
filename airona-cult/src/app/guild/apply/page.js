@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 
-const playstyleOptions = ["Casual", "Semi", "Competitive"];
+const playstyleOptions = ["Casual", "Semi", "Comp"];
 const classOptions = [
   "Frost Mage",
   "Shield Knight",
