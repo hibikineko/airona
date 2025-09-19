@@ -142,27 +142,40 @@ export default function ApplicationsPage() {
               </Box>
 
               {/* Applications Table */}
-              <Table>
+            <Box sx={{ overflowX: "auto" }}>
+            <Table>
                 <TableHead>
-                  <TableRow>
+                <TableRow>
                     {applications.length > 0 &&
-                      Object.keys(applications[0]).map((col) => (
-                        <TableCell key={col}>{col}</TableCell>
-                      ))}
-                  </TableRow>
+                    Object.keys(applications[0])
+                        .filter(
+                        (col) => col !== "id" && col !== "created_at"
+                        )
+                        .map((col) => (
+                        <TableCell key={col}>
+                            {col
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </TableCell>
+                        ))}
+                </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedApps.map((row, i) => (
+                {paginatedApps.map((row, i) => (
                     <TableRow key={i}>
-                      {Object.values(row).map((val, j) => (
+                    {Object.entries(row)
+                        .filter(([col]) => col !== "id" && col !== "created_at")
+                        .map(([col, val], j) => (
                         <TableCell key={j}>
-                          {val !== null ? val.toString() : ""}
+                            {typeof val === "boolean" ? (val ? "Yes" : "No") : val ?? ""}
                         </TableCell>
-                      ))}
+                        ))}
                     </TableRow>
-                  ))}
+                ))}
                 </TableBody>
-              </Table>
+            </Table>
+            </Box>
+
 
               {/* Pagination */}
               <TablePagination
