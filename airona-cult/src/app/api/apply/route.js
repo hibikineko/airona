@@ -21,7 +21,7 @@ export async function POST(req) {
         favourite_bpsr_activity: data.favourite_bpsr_activity,
         how_found_guild: data.how_found_guild,
         why_join_guild: data.why_join_guild,
-        interested_in_events: data.interested_in_events === "true",
+        interested_in_events: data.interested_in_events === true,
         age_range: data.age_range || null,
         birthday: data.birthday || null,
         other_questions: data.other_questions || null,
