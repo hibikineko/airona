@@ -16,6 +16,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 const navOptions = [
     { label: 'Home', icon: <HomeIcon />, path: '/' },
     { label: 'Airona', icon: <PublicIcon />, path: '/airona' },
+    { label: 'Guild', icon: <HomeIcon />, path: '/guild' },
     { label: 'Airona Clicker', icon: <SportsEsportsIcon />, path: '/game/clicker' },
     { label: 'Airona Memory Flip', icon: <CasinoIcon />, path: '/game/card' },
     { label: 'Latest News', icon: <NewspaperIcon />, path: '/maintenance' },

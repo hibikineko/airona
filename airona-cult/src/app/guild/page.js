@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Box,
   Typography,
@@ -9,71 +8,13 @@ import {
   CardContent,
   Paper,
   Link,
+  Grid,
+  Button,
+  Divider
 } from "@mui/material";
 import Image from "next/image";
-import RitualButton from "@/components/button/ritualButton";
-
-const steps = [
-  {
-    gif: "/airona/creepy1.gif",
-    question: "Are you ready to worship Airona?",
-  },
-  {
-    gif: "/airona/creepy2.gif",
-    question: "Are you ready to give everything including your soul to Airona?",
-  },
-];
 
 export default function GuildPage() {
-  const [step, setStep] = useState(0);
-
-  if (step < steps.length) {
-    return (
-      <Box
-        sx={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          bgcolor: "black",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          zIndex: 9999,
-        }}
-      >
-        <Image
-          src={steps[step].gif}
-          alt="Cult Initiation"
-          fill
-          style={{ objectFit: "cover", opacity: 0.7 }}
-        />
-        <Box
-          sx={{
-            position: "relative",
-            zIndex: 10,
-            textAlign: "center",
-            p: 3,
-          }}
-        >
-          <Typography
-            variant="h4"
-            color="white"
-            gutterBottom
-            sx={{ textShadow: "0 0 8px #ff0000, 0 0 16px #660000" }}
-          >
-            {steps[step].question}
-          </Typography>
-          <RitualButton onClick={() => setStep(step + 1)}>
-            Yes, I’m ready
-          </RitualButton>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
       {/* Top Mascot Header */}
@@ -89,94 +30,127 @@ export default function GuildPage() {
       {/* About Us */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h4" gutterBottom>
+          <Typography
+            variant="h4"
+            gutterBottom
+            textAlign="center"
+            sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}
+          >
             😈 About Us 😈
           </Typography>
-          <Typography>
-            <strong>• Guild Name:</strong> Airona Cult <br />
-            <strong>• Timezone:</strong> Everyone is welcome, focus on EU/Asia{" "}
-            <br />
-            <strong>• Focus:</strong> Launch and Worshipping Airona <br />
+
+          <Box sx={{ mb: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4}>
+                <Typography fontWeight="bold">Guild Name:</Typography>
+              </Grid>
+              <Grid item xs={12} sm={8}>
+                <Typography>Airona Cult</Typography>
+              </Grid>
+            </Grid>
+            <Grid container spacing={2}>
+              
+
+              <Grid item xs={12} sm={4}>
+                <Typography fontWeight="bold">Timezone:</Typography>
+              </Grid>
+              <Grid item xs={12} sm={8}>
+                <Typography>Everyone is welcome (focus on EU/Asia)</Typography>
+              </Grid>
+
+            </Grid>
+            <Grid container spacing={2}>
+
+              <Grid item xs={12} sm={4}>
+                <Typography fontWeight="bold">Focus:</Typography>
+              </Grid>
+              <Grid item xs={12} sm={8}>
+                <Typography>Worshipping Airona and Enjoying Game!</Typography>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography paragraph>
+            Airona Cult — the first and only guild fully dedicated to praising Airona,
+            the mischievous mascot who lives for adventure… and more money! 💰
           </Typography>
-          <Typography sx={{ mt: 2 }}>
-            Airona Cult — the first and only guild fully dedicated to praising
-            Airona, the mischievous mascot who lives for adventure… and more
-            money! 💰
-            <br />
-            Here, we follow her teachings of chaos, curiosity, and
-            coin-collecting glory.
-            <br />
-            Whether you’re grinding dailies or shouting <em>&quot;PRAISE AIRONA!!&quot;</em> in guild chat, you’ll fit right in.
+          <Typography>
+            Here, we follow her teachings of chaos, curiosity, and coin-collecting glory.
+            Whether you’re grinding dailies or shouting{" "}
+            <em>&quot;PRAISE AIRONA!!&quot;</em> in guild chat, you’ll fit right in.
           </Typography>
         </CardContent>
       </Card>
 
+
       {/* What We’re Looking For */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom textAlign="center">
             🔮 What We’re Looking For 🔮
           </Typography>
-          <ul style={{ paddingLeft: "1.5rem" }}>
+          <Box component="ul" sx={{ pl: 3, m: 0 }}>
             <li>
               <Typography>
-                Airona Enjoyers → If you love her mischief and coin obsession,
-                this is your home.
+                <strong>Airona Enjoyers →</strong> Love her mischief and coin
+                obsession? This is your home.
               </Typography>
             </li>
             <li>
               <Typography>
-                Active Members → We need coin collectors for raids, weeklies,
-                and secret stashes.
+                <strong>Active Members →</strong> Join raids, weeklies, and help
+                find secret stashes.
               </Typography>
             </li>
             <li>
               <Typography>
-                Fun-Loving Adventurers → Banter, cheering, and plotting… for
-                more money.
+                <strong>Fun-Loving Adventurers →</strong> Banter, cheering, and
+                plotting… for more money.
               </Typography>
             </li>
-          </ul>
+          </Box>
         </CardContent>
       </Card>
 
       {/* What We Offer */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom textAlign="center">
             💎 What We Offer 💎
           </Typography>
-          <ul style={{ paddingLeft: "1.5rem" }}>
+          <Box component="ul" sx={{ pl: 3, m: 0 }}>
             <li>
               <Typography>
-                Cult of Airona → A cozy hub with stickers, art, and daily
+                <strong>Cult of Airona →</strong> Stickers, art, and daily
                 blessings.
               </Typography>
             </li>
             <li>
               <Typography>
-                Fresh Start → Help shape this guild in Airona’s spirit from day
+                <strong>Fresh Start →</strong> Help shape this guild from day
                 one.
               </Typography>
             </li>
             <li>
               <Typography>
-                Fan Website → Celebrate Airona with lore, art, and posts.
+                <strong>Fan Website →</strong> Lore, art, and community posts.
               </Typography>
             </li>
             <li>
               <Typography>
-                Airona’s Blessing → Chill, welcoming energy — drama-free,
-                coin-filled.
+                <strong>Airona’s Blessing →</strong> Chill, welcoming energy —
+                drama-free, coin-filled.
               </Typography>
             </li>
             <li>
               <Typography>
-                Coin-Collecting Brotherhood → Loot, wins, or memories — hoarded
-                together.
+                <strong>Coin-Collecting Brotherhood →</strong> Loot, wins, and
+                memories hoarded together.
               </Typography>
             </li>
-          </ul>
+          </Box>
         </CardContent>
       </Card>
 
@@ -193,15 +167,25 @@ export default function GuildPage() {
           📝 How to Join
         </Typography>
         <Typography sx={{ mb: 2 }}>
-          • Guild applications open 1 week before launch. <br />
           • Pledge your loyalty early to secure your spot in the Cult. <br />
           • Questions? Reach out to us anytime!
         </Typography>
 
-        <Typography sx={{ fontWeight: "bold" }}>
+        <Button
+          variant="contained"
+          color="primary"
+          size="large"
+          fullWidth
+          sx={{ mb: 2 }}
+          onClick={() => (window.location.href = "/guild/apply")}
+        >
+          ✨ Click Here to Apply ✨
+        </Button>
+
+        <Typography sx={{ fontWeight: "bold", mt: 2 }}>
           🔗{" "}
           <Link
-            href="https://discord.gg/SXZkEz9vmS"
+            href="https://discord.gg/airona"
             target="_blank"
             rel="noopener noreferrer"
             underline="hover"
