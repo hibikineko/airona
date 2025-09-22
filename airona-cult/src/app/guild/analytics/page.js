@@ -243,7 +243,13 @@ export default function GuildAnalyticsPage() {
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
+                contentStyle={{
+                  backgroundColor: theme.palette.background.paper,
+                  border: "1px solid #ccc",
+                  color: theme.palette.text.primary,
+                }}
+                labelStyle={{ color: theme.palette.text.primary }}
+                itemStyle={{ color: theme.palette.text.primary }}
               />
               <Legend layout={isMobile ? "vertical" : "horizontal"} verticalAlign="bottom" align="center" />
             </PieChart>
@@ -292,8 +298,10 @@ hourData.forEach(d => {
                 tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }}
               />
               <Tooltip
-                contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
+                contentStyle={{ backgroundColor: theme.palette.background.paper, border: "1px solid #ccc", color: theme.palette.text.primary }}
                 formatter={(value) => [value, "Players"]}
+                labelStyle={{ color: theme.palette.text.primary }}
+                itemStyle={{ color: theme.palette.text.primary }}
                 labelFormatter={(label) => {
                   const utcHour = hourMap[label]?.hour ?? "-";
                   return `Local: ${label}:00 | UTC: ${utcHour !== null ? utcHour + ":00" : "-"}`;
