@@ -8,31 +8,64 @@ import {
   Typography,
   Box,
   CircularProgress,
-  List,
-  ListItem,
-  ListItemText,
-  useMediaQuery
+  useMediaQuery,
 } from "@mui/material";
 import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
   BarChart,
   Bar,
   XAxis,
   YAxis,
+  Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  LabelList,
 } from "recharts";
-import { DateTime } from "luxon"; // for timezone offset conversion
+import { DateTime } from "luxon";
 
-const COLORS = ["#ff9999", "#A6D86C", "#99ff99", "#ffcc99", "#c266ff", "#ffb366"]; // green
+const CLASS_ABBR = {
+  "Marksman": "MM",
+  "Stormblade": "SB",
+  "Verdant Oracle": "VO",
+  "Shield Knight": "SK",
+  "Wind Knight": "WK",
+  "Beat Performer": "BP",
+  "Heavy Guardian": "HG",
+  "Frost Mage": "FM",
+};
+
+const CLASS_COLORS = {
+  MM: "#FFA726",
+  SB: "#AB47BC",
+  VO: "#26A69A",
+  SK: "#42A5F5",
+  WK: "#8D6E63",
+  BP: "#FF7043",
+  HG: "#6D4C41",
+  FM: "#66BB6A",
+  OTHER: "#B0BEC5",
+};
+
+const AGE_COLORS = {
+  "13-20": "#A6D86C",
+  "21-30": "#C7B7F9",
+  "30+": "#A0A0A0",
+  UNKNOWN: "#D3D3D3",
+};
+
+const PLAYSTYLE_COLORS = {
+  casual: "#66BB6A",
+  semi: "#A6D86C",
+  comp: "#5C8138",
+  unknown: "#BDBDBD",
+};
 
 export default function GuildAnalyticsPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const isMobile = useMediaQuery("(max-width:768px)"); // MUI hook for mobile
+  const isMobile = useMediaQuery("(max-width:768px)");
 
   useEffect(() => {
     const fetchApproved = async () => {
@@ -40,9 +73,10 @@ export default function GuildAnalyticsPage() {
         const res = await fetch("/api/approved");
         if (!res.ok) throw new Error("Failed to fetch");
         const result = await res.json();
-        setData(result);
+        setData(result || []);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load approved data:", err);
+        setData([]);
       } finally {
         setLoading(false);
       }
@@ -58,162 +92,236 @@ export default function GuildAnalyticsPage() {
     );
   }
 
-  // ===== Transformations =====
-  const classesData = Object.entries(
-    data.reduce((acc, cur) => {
-      const shortName = cur.planned_main_class.length > 10
-        ? cur.planned_main_class.slice(0, 10) + "…"
-        : cur.planned_main_class;
-      acc[shortName] = (acc[shortName] || 0) + 1;
-      return acc;
-    }, {})
-  ).map(([name, value]) => ({ name, value }));
+  // ---------- Helpers ----------
+  const safeString = (v) => (v === null || v === undefined ? "Unknown" : String(v));
 
-  const ageData = Object.entries(
-    data.reduce((acc, cur) => {
-      acc[cur.age_range] = (acc[cur.age_range] || 0) + 1;
-      return acc;
-    }, {})
-  ).map(([name, value]) => ({ name, value }));
-
-  const playstyleData = Object.entries(
-    data.reduce((acc, cur) => {
-      acc[cur.playstyle] = (acc[cur.playstyle] || 0) + 1;
-      return acc;
-    }, {})
-  ).map(([name, value]) => ({ name, value }));
-
-  const favActivities = Object.entries(
-    data.reduce((acc, cur) => {
-      const activity = cur.favourite_bpsr_activity || "Unknown";
-      acc[activity] = (acc[activity] || 0) + 1;
-      return acc;
-    }, {})
-  ).map(([name, count]) => ({ name, count }));
-
-  // Convert timezone to UTC offset string
-  const getUTCOffset = (tz) => {
+  // Parse timezone offset in hours (can be negative, fractional). Accepts IANA zone names or UTC offsets.
+  const tzToOffsetHours = (tz) => {
+    if (!tz) return 0;
     try {
-      return "UTC" + DateTime.now().setZone(tz).toFormat("ZZ");
-    } catch {
-      return "UTC+0";
+      // If tz is like "UTC+2" or "GMT+8", try to parse numeric offset quickly
+      const m = tz.match(/([UuGg][Tt][Cc]?|GMT)?\s*([+-]\d{1,2})(:?(\d{2}))?/);
+      if (m && (m[2] || m[3])) {
+        const h = parseInt(m[2], 10);
+        const mins = m[4] ? parseInt(m[4], 10) : 0;
+        return h + mins / 60;
+      }
+      // Otherwise use luxon to get offset minutes
+      const dt = DateTime.now().setZone(tz);
+      if (dt.isValid) return dt.offset / 60;
+    } catch (e) {
+      // fallback
     }
+    return 0;
   };
 
-  // Bar chart: timezone count (converted to UTC offset)
-  const timezoneMap = data.reduce((acc, cur) => {
-    const offset = getUTCOffset(cur.timezone);
-    acc[offset] = (acc[offset] || 0) + 1;
+  // Build classes distribution
+  const classesCount = data.reduce((acc, cur) => {
+    const cls = safeString(cur.planned_main_class);
+    const abbr = CLASS_ABBR[cls] || (cls ? cls.slice(0,2).toUpperCase() : "OT");
+    acc[abbr] = (acc[abbr] || 0) + 1;
+    return acc;
+  }, {});
+  const classesData = Object.entries(classesCount).map(([name, value]) => ({
+    name,
+    value,
+    color: CLASS_COLORS[name] || CLASS_COLORS.OTHER,
+  })).sort((a,b) => b.value - a.value);
+
+  // Age distribution
+  const ageCount = data.reduce((acc, cur) => {
+    const a = cur.age_range || "UNKNOWN";
+    acc[a] = (acc[a] || 0) + 1;
+    return acc;
+  }, {});
+  const ageData = Object.entries(ageCount).map(([name, value]) => ({
+    name,
+    value,
+    color: AGE_COLORS[name] || AGE_COLORS.UNKNOWN,
+  }));
+
+  // Playstyle (pie)
+  const playstyleCount = data.reduce((acc, cur) => {
+    const p = (cur.playstyle || "unknown").toLowerCase();
+    acc[p] = (acc[p] || 0) + 1;
+    return acc;
+  }, {});
+  const playstyleData = Object.entries(playstyleCount).map(([name, value]) => ({
+    name,
+    value,
+    color: PLAYSTYLE_COLORS[name] || PLAYSTYLE_COLORS.unknown,
+  }));
+
+  // Favorite activities (anonymous) - aggregated and sorted
+  const favCount = data.reduce((acc, cur) => {
+    const activity = (cur.favourite_bpsr_activity || "Unknown").trim();
+    if (!activity) return acc;
+    acc[activity] = (acc[activity] || 0) + 1;
+    return acc;
+  }, {});
+  const favData = Object.entries(favCount)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a,b) => b.count - a.count);
+
+  // Timezone distribution by UTC offset (rounded to nearest integer)
+  const tzMap = data.reduce((acc, cur) => {
+    const tz = cur.timezone;
+    const off = Math.round(tzToOffsetHours(tz)); // round to nearest hour for grouping
+    acc[off] = (acc[off] || 0) + 1;
     return acc;
   }, {});
 
-  // Convert to array and sort by numeric UTC offset
-  const timezoneData = Object.entries(timezoneMap)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => {
-      const getOffset = (str) => {
-        const match = str.match(/UTC([+-]\d+):?(\d+)?/);
-        if (!match) return 0;
-        return parseInt(match[1], 10) + (parseInt(match[2] || "0", 10) / 60);
-      };
-      return getOffset(a.name) - getOffset(b.name);
-    });
+  // Convert into array and create tick marks every 5 hours
+  const tzEntries = Object.entries(tzMap)
+    .map(([k, v]) => ({ offset: parseInt(k, 10), value: v }))
+    .sort((a,b) => a.offset - b.offset);
 
-  // Active players per UTC hour (24h)
+  // Determine tick range in multiples of 5
+  const minOffset = tzEntries.length ? tzEntries[0].offset : -12;
+  const maxOffset = tzEntries.length ? tzEntries[tzEntries.length-1].offset : 12;
+  const tickStart = Math.floor(minOffset / 5) * 5;
+  const tickEnd = Math.ceil(maxOffset / 5) * 5;
+  const tzTicks = [];
+  for (let t = tickStart; t <= tickEnd; t += 5) tzTicks.push(t);
+
+  const timezoneData = tzEntries.map(e => ({ name: `UTC${e.offset>=0?"+":""}${e.offset}`, value: e.value, offset: e.offset }));
+
+  // Active time aggregation - expects active_time_utc as array of {start: "HH:mm", end: "HH:mm"} in UTC
+  // If your api stores active_time as a string like "8pm to 12am", you should pre-convert on server into active_time_utc.
   const hourBins = Array.from({ length: 24 }, (_, i) => ({ hour: i, count: 0 }));
   data.forEach(member => {
-    if (member.active_time_utc) {
-      member.active_time_utc.forEach(range => {
-        const start = parseInt(range.start.split(":")[0], 10);
-        const end = parseInt(range.end.split(":")[0], 10);
-        if (end > start) {
-          for (let h = start; h < end; h++) hourBins[h % 24].count += 1;
-        } else {
-          for (let h = start; h < 24; h++) hourBins[h].count += 1;
-          for (let h = 0; h < end; h++) hourBins[h].count += 1;
-        }
-      });
-    }
+    const ranges = member.active_time_utc;
+    if (!ranges || !Array.isArray(ranges)) return;
+
+    ranges.forEach(range => {
+      // parse "HH:mm" strings
+      const parseHour = (s) => {
+        if (!s) return null;
+        const parts = s.split(":").map(p => parseInt(p, 10));
+        if (Number.isNaN(parts[0])) return null;
+        return parts[0] % 24;
+      };
+      const start = parseHour(range.start);
+      const end = parseHour(range.end);
+      if (start === null || end === null) return;
+
+      if (end > start) {
+        for (let h = start; h < end; h++) hourBins[h % 24].count += 1;
+      } else {
+        // wraps midnight
+        for (let h = start; h < 24; h++) hourBins[h].count += 1;
+        for (let h = 0; h < end; h++) hourBins[h].count += 1;
+      }
+    });
   });
 
-  const hourData = hourBins.map(bin => ({
-    name: `${bin.hour}:00`,
-    value: bin.count,
-  }));
+  const hourData = hourBins.map(b => ({ name: `${b.hour}:00`, value: b.count, hour: b.hour }));
 
-  // ===== Render functions =====
-  const renderPie = (title, dataset) => (
-    <Card sx={{ mb: 4 }}>
+  // Create ticks every 5 hours for the hour chart (center 0 concept not relevant for hours; show 0,5,10,15,20)
+  const hourTicks = [];
+  for (let t = 0; t < 24; t += 5) hourTicks.push(t);
+
+  // ---------- Render helpers ----------
+  const renderBarWithLabels = ({ title, dataset, getColor = () => "#A6D86C", xKey = "name", yKey = "value", height = 320, ticks = null }) => (
+    <Card sx={{ mb: 3 }}>
       <CardContent>
         <Typography variant="h6" gutterBottom>{title}</Typography>
-        <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
-        <PieChart>
-            <Pie
-            data={dataset}
-            dataKey="value"
-            nameKey="name"
-            outerRadius={isMobile ? 70 : 120}
-            label={false} // hide labels inside slices
-            isAnimationActive={false}
-            >
-            {dataset.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-            </Pie>
-            {!isMobile && <Tooltip />} {/* Disable hover tooltip on mobile */}
-            <Legend layout="horizontal" verticalAlign="bottom" align="center" />
-        </PieChart>
-        </ResponsiveContainer>
-
+        <Box sx={{ width: "100%", height: isMobile ? Math.round(height * 0.8) : height }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dataset}>
+              <XAxis dataKey={xKey} tick={{ fontSize: isMobile ? 11 : 12 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: isMobile ? 11 : 12 }} />
+              <Tooltip />
+              <Bar dataKey={yKey} fill="#A6D86C" isAnimationActive={false}>
+                {dataset.map((entry, idx) => (
+                  <Cell key={`c-${idx}`} fill={getColor(entry, idx)} />
+                ))}
+                <LabelList dataKey={yKey} position="top" style={{ fontSize: isMobile ? 11 : 13 }} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
       </CardContent>
     </Card>
   );
 
-  const renderBar = (title, dataset, color = "#A6D86C") => (
-    <Card sx={{ mb: 4 }}>
+  const renderPlaystylePie = () => (
+    <Card sx={{ mb: 3 }}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>{title}</Typography>
-        <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
-          <BarChart data={dataset}>
-            <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="value" fill={color} />
-          </BarChart>
-        </ResponsiveContainer>
+        <Typography variant="h6" gutterBottom>Playstyle Distribution</Typography>
+        <Box sx={{ width: "100%", height: isMobile ? 220 : 320 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={playstyleData} dataKey="value" nameKey="name" outerRadius={isMobile ? 70 : 110} label={(entry) => `${entry.name} (${entry.value})`}>
+                {playstyleData.map((entry, idx) => (
+                  <Cell key={`p-${idx}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend layout={isMobile ? "vertical" : "horizontal"} verticalAlign="bottom" align="center" />
+            </PieChart>
+          </ResponsiveContainer>
+        </Box>
       </CardContent>
     </Card>
   );
 
-  const renderFavActivitiesList = (title, activities) => (
-    <Card sx={{ mb: 4, maxHeight: 400, overflowY: "auto" }}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>{title}</Typography>
-        <List>
-          {activities.map((activity, index) => (
-            <ListItem key={index} divider>
-              <ListItemText primary={`${activity.name} (${activity.count})`} />
-            </ListItem>
-          ))}
-        </List>
-      </CardContent>
-    </Card>
-  );
-
+  // ---------- Render ----------
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
       <Typography variant="h4" gutterBottom>📊 Guild Analytics</Typography>
 
-      {renderPie("Class Distribution", classesData)}
-      {renderPie("Age Range Distribution", ageData)}
-      {renderPie("Playstyle Distribution", playstyleData)}
+      {/* Classes distribution (bar) */}
+      {renderBarWithLabels({
+        title: "Class Distribution",
+        dataset: classesData.map(d => ({ name: d.name, value: d.value })),
+        getColor: (entry) => CLASS_COLORS[entry.name] || CLASS_COLORS.OTHER,
+        height: isMobile ? 260 : 360,
+      })}
 
-      {renderBar("Active Players per UTC Offset", timezoneData)}
+      {/* Age distribution (bar) */}
+      {renderBarWithLabels({
+        title: "Age Range Distribution",
+        dataset: ageData.map(d => ({ name: d.name, value: d.value })),
+        getColor: (entry) => AGE_COLORS[entry.name] || AGE_COLORS.UNKNOWN,
+        height: isMobile ? 220 : 320,
+      })}
 
-      {renderBar("Active Players per UTC Hour (24h)", hourData)}
+      {/* Playstyle pie */}
+      {renderPlaystylePie()}
 
-      {renderFavActivitiesList("Favorite Activities (Anonymous)", favActivities)}
+      {/* Timezone distribution (bar) */}
+      {renderBarWithLabels({
+        title: "Active Players by UTC Offset (grouped)",
+        dataset: timezoneData.map(d => ({ name: `UTC${d.offset>=0?"+":""}${d.offset}`, value: d.value, offset: d.offset })),
+        getColor: () => "#A6D86C",
+        height: isMobile ? 260 : 360,
+      })}
+
+      {/* Active time per UTC hour */}
+      {renderBarWithLabels({
+        title: "Active Players per UTC Hour (24h)",
+        dataset: hourData.map(d => ({ name: d.name, value: d.value, hour: d.hour })),
+        getColor: () => "#66BB6A",
+        height: isMobile ? 300 : 420,
+      })}
+
+      {/* Favorite activities list (anonymous) */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>Favorite Activities (anonymous)</Typography>
+          {favData.length === 0 ? (
+            <Typography variant="body2">No data</Typography>
+          ) : (
+            favData.slice(0, 50).map((f, idx) => (
+              <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", py: 0.5, borderBottom: idx < favData.length - 1 ? "1px solid #eee" : "none" }}>
+                <Typography variant="body2" sx={{ fontSize: isMobile ? 13 : 14 }}>{f.name}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>{f.count}</Typography>
+              </Box>
+            ))
+          )}
+        </CardContent>
+      </Card>
     </Container>
   );
 }
