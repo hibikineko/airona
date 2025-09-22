@@ -191,30 +191,44 @@ export default function GuildAnalyticsPage() {
   const hourData = hourBins.map(b => ({ name: `${b.hour}:00`, value: b.count, hour: b.hour }));
 
   // ---------- Render helpers ----------
-  const renderBarWithLabels = ({ title, dataset, getColor = () => "#A6D86C", xKey = "name", yKey = "value", height = 320 }) => (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>{title}</Typography>
-        <Box sx={{ width: "100%", height: isMobile ? Math.round(height * 0.8) : height }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dataset}>
-              <XAxis dataKey={xKey} tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
-              />
-              <Bar dataKey={yKey} isAnimationActive={false}>
-                {dataset.map((entry, idx) => (
-                  <Cell key={`c-${idx}`} fill={getColor(entry, idx)} />
-                ))}
-                <LabelList dataKey={yKey} position="top" style={{ fontSize: isMobile ? 11 : 13, fill: theme.palette.text.primary }} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
-      </CardContent>
-    </Card>
-  );
+  const renderBarWithLabels = ({
+  title,
+  dataset,
+  getColor = () => "#A6D86C",
+  xKey = "name",
+  yKey = "value",
+  height = 320,
+  renderLabel, // optional
+  tooltipFormatter, // optional
+}) => (
+  <Card sx={{ mb: 3 }}>
+    <CardContent>
+      <Typography variant="h6" gutterBottom>{title}</Typography>
+      <Box sx={{ width: "100%", height: isMobile ? Math.round(height * 0.8) : height }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={dataset}>
+            <XAxis
+              dataKey={xKey}
+              tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }}
+              tickFormatter={(val, idx) => renderLabel ? renderLabel(dataset[idx]) : val}
+            />
+            <YAxis allowDecimals={false} tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
+              formatter={(value, name, props) => tooltipFormatter ? [value, tooltipFormatter(props.payload)] : [value, name]}
+            />
+            <Bar dataKey={yKey} isAnimationActive={false}>
+              {dataset.map((entry, idx) => (
+                <Cell key={`c-${idx}`} fill={getColor(entry, idx)} />
+              ))}
+              <LabelList dataKey={yKey} position="top" style={{ fontSize: isMobile ? 11 : 13, fill: theme.palette.text.primary }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </Box>
+    </CardContent>
+  </Card>
+);
 
   const renderPlaystylePie = () => (
     <Card sx={{ mb: 3 }}>
@@ -321,10 +335,19 @@ hourData.forEach(d => {
 
       {renderBarWithLabels({
         title: "Class Distribution",
-        dataset: classesData.map(d => ({ name: d.name, value: d.value })),
+        dataset: classesData.map(d => ({
+          name: d.name, // abbreviation for mobile
+          fullName: Object.entries(CLASS_ABBR).find(([k,v]) => v === d.name)?.[0] || d.name,
+          value: d.value,
+        })),
         getColor: (entry) => CLASS_COLORS[entry.name] || CLASS_COLORS.OTHER,
         height: isMobile ? 260 : 360,
+        // Custom tickFormatter for X-axis
+        xKey: "name",
+        renderLabel: (entry) => isMobile ? entry.name : entry.fullName,
+        tooltipFormatter: (entry) => isMobile ? entry.name : entry.fullName,
       })}
+
 
       {renderBarWithLabels({
         title: "Age Range Distribution",
