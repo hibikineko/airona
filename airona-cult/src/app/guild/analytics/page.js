@@ -24,6 +24,7 @@ import {
   LabelList,
 } from "recharts";
 import { DateTime } from "luxon";
+import { useTheme } from "@mui/material/styles";
 
 const CLASS_ABBR = {
   "Marksman": "MM",
@@ -66,6 +67,7 @@ export default function GuildAnalyticsPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useMediaQuery("(max-width:768px)");
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchApproved = async () => {
@@ -95,40 +97,32 @@ export default function GuildAnalyticsPage() {
   // ---------- Helpers ----------
   const safeString = (v) => (v === null || v === undefined ? "Unknown" : String(v));
 
-  // Parse timezone offset in hours (can be negative, fractional). Accepts IANA zone names or UTC offsets.
   const tzToOffsetHours = (tz) => {
     if (!tz) return 0;
     try {
-      // If tz is like "UTC+2" or "GMT+8", try to parse numeric offset quickly
       const m = tz.match(/([UuGg][Tt][Cc]?|GMT)?\s*([+-]\d{1,2})(:?(\d{2}))?/);
       if (m && (m[2] || m[3])) {
         const h = parseInt(m[2], 10);
         const mins = m[4] ? parseInt(m[4], 10) : 0;
         return h + mins / 60;
       }
-      // Otherwise use luxon to get offset minutes
       const dt = DateTime.now().setZone(tz);
       if (dt.isValid) return dt.offset / 60;
-    } catch (e) {
-      // fallback
-    }
+    } catch (e) {}
     return 0;
   };
 
-  // Build classes distribution
+  // ---------- Process Data ----------
   const classesCount = data.reduce((acc, cur) => {
     const cls = safeString(cur.planned_main_class);
     const abbr = CLASS_ABBR[cls] || (cls ? cls.slice(0,2).toUpperCase() : "OT");
     acc[abbr] = (acc[abbr] || 0) + 1;
     return acc;
   }, {});
-  const classesData = Object.entries(classesCount).map(([name, value]) => ({
-    name,
-    value,
-    color: CLASS_COLORS[name] || CLASS_COLORS.OTHER,
-  })).sort((a,b) => b.value - a.value);
+  const classesData = Object.entries(classesCount)
+    .map(([name, value]) => ({ name, value, color: CLASS_COLORS[name] || CLASS_COLORS.OTHER }))
+    .sort((a,b) => b.value - a.value);
 
-  // Age distribution
   const ageCount = data.reduce((acc, cur) => {
     const a = cur.age_range || "UNKNOWN";
     acc[a] = (acc[a] || 0) + 1;
@@ -140,7 +134,6 @@ export default function GuildAnalyticsPage() {
     color: AGE_COLORS[name] || AGE_COLORS.UNKNOWN,
   }));
 
-  // Playstyle (pie)
   const playstyleCount = data.reduce((acc, cur) => {
     const p = (cur.playstyle || "unknown").toLowerCase();
     acc[p] = (acc[p] || 0) + 1;
@@ -152,7 +145,6 @@ export default function GuildAnalyticsPage() {
     color: PLAYSTYLE_COLORS[name] || PLAYSTYLE_COLORS.unknown,
   }));
 
-  // Favorite activities (anonymous) - aggregated and sorted
   const favCount = data.reduce((acc, cur) => {
     const activity = (cur.favourite_bpsr_activity || "Unknown").trim();
     if (!activity) return acc;
@@ -163,38 +155,22 @@ export default function GuildAnalyticsPage() {
     .map(([name, count]) => ({ name, count }))
     .sort((a,b) => b.count - a.count);
 
-  // Timezone distribution by UTC offset (rounded to nearest integer)
   const tzMap = data.reduce((acc, cur) => {
     const tz = cur.timezone;
-    const off = Math.round(tzToOffsetHours(tz)); // round to nearest hour for grouping
+    const off = Math.round(tzToOffsetHours(tz));
     acc[off] = (acc[off] || 0) + 1;
     return acc;
   }, {});
-
-  // Convert into array and create tick marks every 5 hours
   const tzEntries = Object.entries(tzMap)
     .map(([k, v]) => ({ offset: parseInt(k, 10), value: v }))
     .sort((a,b) => a.offset - b.offset);
-
-  // Determine tick range in multiples of 5
-  const minOffset = tzEntries.length ? tzEntries[0].offset : -12;
-  const maxOffset = tzEntries.length ? tzEntries[tzEntries.length-1].offset : 12;
-  const tickStart = Math.floor(minOffset / 5) * 5;
-  const tickEnd = Math.ceil(maxOffset / 5) * 5;
-  const tzTicks = [];
-  for (let t = tickStart; t <= tickEnd; t += 5) tzTicks.push(t);
-
   const timezoneData = tzEntries.map(e => ({ name: `UTC${e.offset>=0?"+":""}${e.offset}`, value: e.value, offset: e.offset }));
 
-  // Active time aggregation - expects active_time_utc as array of {start: "HH:mm", end: "HH:mm"} in UTC
-  // If your api stores active_time as a string like "8pm to 12am", you should pre-convert on server into active_time_utc.
   const hourBins = Array.from({ length: 24 }, (_, i) => ({ hour: i, count: 0 }));
   data.forEach(member => {
     const ranges = member.active_time_utc;
     if (!ranges || !Array.isArray(ranges)) return;
-
     ranges.forEach(range => {
-      // parse "HH:mm" strings
       const parseHour = (s) => {
         if (!s) return null;
         const parts = s.split(":").map(p => parseInt(p, 10));
@@ -204,39 +180,34 @@ export default function GuildAnalyticsPage() {
       const start = parseHour(range.start);
       const end = parseHour(range.end);
       if (start === null || end === null) return;
-
       if (end > start) {
         for (let h = start; h < end; h++) hourBins[h % 24].count += 1;
       } else {
-        // wraps midnight
         for (let h = start; h < 24; h++) hourBins[h].count += 1;
         for (let h = 0; h < end; h++) hourBins[h].count += 1;
       }
     });
   });
-
   const hourData = hourBins.map(b => ({ name: `${b.hour}:00`, value: b.count, hour: b.hour }));
 
-  // Create ticks every 5 hours for the hour chart (center 0 concept not relevant for hours; show 0,5,10,15,20)
-  const hourTicks = [];
-  for (let t = 0; t < 24; t += 5) hourTicks.push(t);
-
   // ---------- Render helpers ----------
-  const renderBarWithLabels = ({ title, dataset, getColor = () => "#A6D86C", xKey = "name", yKey = "value", height = 320, ticks = null }) => (
+  const renderBarWithLabels = ({ title, dataset, getColor = () => "#A6D86C", xKey = "name", yKey = "value", height = 320 }) => (
     <Card sx={{ mb: 3 }}>
       <CardContent>
         <Typography variant="h6" gutterBottom>{title}</Typography>
         <Box sx={{ width: "100%", height: isMobile ? Math.round(height * 0.8) : height }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={dataset}>
-              <XAxis dataKey={xKey} tick={{ fontSize: isMobile ? 11 : 12 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: isMobile ? 11 : 12 }} />
-              <Tooltip />
-              <Bar dataKey={yKey} fill="#A6D86C" isAnimationActive={false}>
+              <XAxis dataKey={xKey} tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
+              />
+              <Bar dataKey={yKey} isAnimationActive={false}>
                 {dataset.map((entry, idx) => (
                   <Cell key={`c-${idx}`} fill={getColor(entry, idx)} />
                 ))}
-                <LabelList dataKey={yKey} position="top" style={{ fontSize: isMobile ? 11 : 13 }} />
+                <LabelList dataKey={yKey} position="top" style={{ fontSize: isMobile ? 11 : 13, fill: theme.palette.text.primary }} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -257,7 +228,9 @@ export default function GuildAnalyticsPage() {
                   <Cell key={`p-${idx}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
+              />
               <Legend layout={isMobile ? "vertical" : "horizontal"} verticalAlign="bottom" align="center" />
             </PieChart>
           </ResponsiveContainer>
@@ -266,12 +239,86 @@ export default function GuildAnalyticsPage() {
     </Card>
   );
 
+ const renderActiveTimeHeatmap = () => {
+  const localOffset = new Date().getTimezoneOffset() / -60; // in hours, e.g., +5.5 for IST
+
+  // Map data to local hours (0-23)
+const hourMap = Array.from({ length: 24 }, (_, i) => ({
+  localHour: i,
+  value: 0,
+  hour: null, // placeholder for UTC hour
+}));
+
+// Fill hourMap with actual counts
+hourData.forEach(d => {
+  const localHour = Math.floor((d.hour + localOffset + 24) % 24); // <-- FLOOR to integer
+  hourMap[localHour].value += d.value; // accumulate if fractional overlaps
+  hourMap[localHour].hour = d.hour;
+});
+
+
+  return (
+    <Card sx={{ mb: 3 }}>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          Active Time Heatmap (Your Local Time)
+        </Typography>
+        <Box sx={{ width: "100%", height: isMobile ? 200 : 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={hourMap}>
+              <XAxis
+                dataKey="localHour"
+                type="number"
+                domain={[0, 23]}
+                tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }}
+                tickFormatter={(h) => `${h}:00`}
+              />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }}
+              />
+              <Tooltip
+                contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
+                formatter={(value) => [value, "Players"]}
+                labelFormatter={(label) => {
+                  const utcHour = hourMap[label]?.hour ?? "-";
+                  return `Local: ${label}:00 | UTC: ${utcHour !== null ? utcHour + ":00" : "-"}`;
+                }}
+              />
+              <Bar
+                dataKey="value"
+                isAnimationActive={false}
+                shape={(props) => {
+                  const { x, y, width, height, payload } = props;
+                  const maxCount = Math.max(...hourMap.map(d => d.value), 1);
+                  const intensity = payload.value / maxCount;
+                  // Gradient: green → yellow → red
+                  let fillColor;
+                  if (intensity < 0.5) {
+                    const ratio = intensity / 0.5;
+                    fillColor = `rgb(${Math.round(166 + ratio * (255-166))}, ${Math.round(216 + ratio * (255-216))}, 100)`;
+                  } else {
+                    const ratio = (intensity - 0.5) / 0.5;
+                    fillColor = `rgb(255, ${Math.round(255 - ratio * 255)}, 100)`;
+                  }
+                  return <rect x={x} y={y} width={width} height={height} fill={fillColor} />;
+                }}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+
+
   // ---------- Render ----------
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
       <Typography variant="h4" gutterBottom>📊 Guild Analytics</Typography>
 
-      {/* Classes distribution (bar) */}
       {renderBarWithLabels({
         title: "Class Distribution",
         dataset: classesData.map(d => ({ name: d.name, value: d.value })),
@@ -279,7 +326,6 @@ export default function GuildAnalyticsPage() {
         height: isMobile ? 260 : 360,
       })}
 
-      {/* Age distribution (bar) */}
       {renderBarWithLabels({
         title: "Age Range Distribution",
         dataset: ageData.map(d => ({ name: d.name, value: d.value })),
@@ -287,10 +333,8 @@ export default function GuildAnalyticsPage() {
         height: isMobile ? 220 : 320,
       })}
 
-      {/* Playstyle pie */}
       {renderPlaystylePie()}
 
-      {/* Timezone distribution (bar) */}
       {renderBarWithLabels({
         title: "Active Players by UTC Offset (grouped)",
         dataset: timezoneData.map(d => ({ name: `UTC${d.offset>=0?"+":""}${d.offset}`, value: d.value, offset: d.offset })),
@@ -298,7 +342,6 @@ export default function GuildAnalyticsPage() {
         height: isMobile ? 260 : 360,
       })}
 
-      {/* Active time per UTC hour */}
       {renderBarWithLabels({
         title: "Active Players per UTC Hour (24h)",
         dataset: hourData.map(d => ({ name: d.name, value: d.value, hour: d.hour })),
@@ -306,7 +349,8 @@ export default function GuildAnalyticsPage() {
         height: isMobile ? 300 : 420,
       })}
 
-      {/* Favorite activities list (anonymous) */}
+      {renderActiveTimeHeatmap()}
+
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>Favorite Activities (anonymous)</Typography>
@@ -315,8 +359,8 @@ export default function GuildAnalyticsPage() {
           ) : (
             favData.slice(0, 50).map((f, idx) => (
               <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", py: 0.5, borderBottom: idx < favData.length - 1 ? "1px solid #eee" : "none" }}>
-                <Typography variant="body2" sx={{ fontSize: isMobile ? 13 : 14 }}>{f.name}</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700 }}>{f.count}</Typography>
+                <Typography variant="body2" sx={{ fontSize: isMobile ? 13 : 14, color: theme.palette.text.primary }}>{f.name}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>{f.count}</Typography>
               </Box>
             ))
           )}
