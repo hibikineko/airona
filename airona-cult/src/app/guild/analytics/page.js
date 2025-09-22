@@ -216,6 +216,8 @@ export default function GuildAnalyticsPage() {
             <Tooltip
               contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
               formatter={(value, name, props) => tooltipFormatter ? [value, tooltipFormatter(props.payload)] : [value, name]}
+              labelStyle={{ color: theme.palette.text.primary }}
+              itemStyle={{ color: theme.palette.text.primary }}
             />
             <Bar dataKey={yKey} isAnimationActive={false}>
               {dataset.map((entry, idx) => (
@@ -285,10 +287,10 @@ hourData.forEach(d => {
         </Typography>
         <Box sx={{ width: "100%", height: isMobile ? 200 : 300 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={hourMap}>
+            <BarChart data={hourMap}  margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
               <XAxis
                 dataKey="localHour"
-                type="number"
+                type="category"
                 domain={[0, 23]}
                 tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }}
                 tickFormatter={(h) => `${h}:00`}
@@ -306,6 +308,7 @@ hourData.forEach(d => {
                   const utcHour = hourMap[label]?.hour ?? "-";
                   return `Local: ${label}:00 | UTC: ${utcHour !== null ? utcHour + ":00" : "-"}`;
                 }}
+
               />
               <Bar
                 dataKey="value"
