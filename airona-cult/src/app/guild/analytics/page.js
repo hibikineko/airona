@@ -206,7 +206,7 @@ export default function GuildAnalyticsPage() {
       <Typography variant="h6" gutterBottom>{title}</Typography>
       <Box sx={{ width: "100%", height: isMobile ? Math.round(height * 0.8) : height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dataset}>
+          <BarChart data={dataset} margin={{ top: 30, right: 10, bottom: 5, left: 10 }}>
             <XAxis
               dataKey={xKey}
               tick={{ fontSize: isMobile ? 11 : 12, fill: theme.palette.text.primary }}
