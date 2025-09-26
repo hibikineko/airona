@@ -30,6 +30,28 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
+      <head>
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content="Airona Cult Special Rules" />
+        <meta property="og:description" content="Follow these sacred rules and prosper in coin and adventure! 🪙✨" />
+        <meta property="og:image" content="https://airona.club/airona/airona2.png" />
+        <meta property="og:url" content="https://airona.club" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Airona Cult" />
+        
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Airona Cult Special Rules" />
+        <meta name="twitter:description" content="Follow these sacred rules and prosper in coin and adventure! 🪙✨" />
+        <meta name="twitter:image" content="https://airona.club/airona/airona2.png" />
+        
+        {/* General Meta Tags */}
+        <meta name="description" content="Sacred commandments for all devoted followers of Airona. Join the cult and follow these rules to prosper in coin and adventure!" />
+        <meta name="theme-color" content="#A6D86C" />
+        
+        {/* Force Light Theme for Social Previews */}
+        <meta name="color-scheme" content="light" />
+      </head>
       <body>
         <ThemeProvider theme={theme}>
           <CssBaseline />
