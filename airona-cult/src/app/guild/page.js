@@ -49,18 +49,14 @@ export default function GuildPage() {
               </Grid>
             </Grid>
             <Grid container spacing={2}>
-              
-
               <Grid item xs={12} sm={4}>
                 <Typography fontWeight="bold">Timezone:</Typography>
               </Grid>
               <Grid item xs={12} sm={8}>
                 <Typography>Everyone is welcome (focus on EU/Asia)</Typography>
               </Grid>
-
             </Grid>
             <Grid container spacing={2}>
-
               <Grid item xs={12} sm={4}>
                 <Typography fontWeight="bold">Focus:</Typography>
               </Grid>
@@ -78,18 +74,17 @@ export default function GuildPage() {
           </Typography>
           <Typography>
             Here, we follow her teachings of chaos, curiosity, and coin-collecting glory.
-            Whether you're grinding dailies or shouting{" "}
-            <em>&quot;PRAISE AIRONA!!&quot;</em> in guild chat, you'll fit right in.
+            Whether you&apos;re grinding dailies or shouting{" "}
+            <em>&quot;PRAISE AIRONA!!&quot;</em> in guild chat, you&apos;ll fit right in.
           </Typography>
         </CardContent>
       </Card>
-
 
       {/* What We're Looking For */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h4" gutterBottom textAlign="center">
-            🔮 What We're Looking For 🔮
+            🔮 What We&apos;re Looking For 🔮
           </Typography>
           <Box component="ul" sx={{ pl: 3, m: 0 }}>
             <li>
@@ -140,7 +135,7 @@ export default function GuildPage() {
             </li>
             <li>
               <Typography>
-                <strong>Airona's Blessing →</strong> Chill, welcoming energy —
+                <strong>Airona&apos;s Blessing →</strong> Chill, welcoming energy — 
                 drama-free, coin-filled.
               </Typography>
             </li>
