@@ -177,7 +177,7 @@ export default function AironaMemory() {
     ) {
       setGameOver(true);
     }
-  }, [matched, moves, cards, difficulty, started]);
+  }, [matched, moves, cards, difficulty, started, difficulties]);
 
   
 

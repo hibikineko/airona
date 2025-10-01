@@ -2,22 +2,44 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabaseServer";
+import { moderateRateLimit } from "@/lib/rateLimit";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+export async function GET(request) {
+  // Apply rate limiting
+  const rateLimitResult = moderateRateLimit.check(request);
+  if (!rateLimitResult.success) {
+    return NextResponse.json(
+      { error: rateLimitResult.error }, 
+      { 
+        status: 429,
+        headers: {
+          'Retry-After': rateLimitResult.retryAfter.toString()
+        }
+      }
+    );
+  }
 
+  try {
+    const session = await getServerSession(authOptions);
+    
+    // Add authentication check if needed
+    // if (!session) {
+    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // }
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+    const { data, error } = await supabaseServer.from("members").select("*");
 
-  const { data, error } = await supabase.from("members").select("*");
+    if (error) {
+      console.error("Members fetch error:", error);
+      return NextResponse.json({ error: "Failed to fetch members" }, { status: 500 });
+    }
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json(data);
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Members API error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function POST() {

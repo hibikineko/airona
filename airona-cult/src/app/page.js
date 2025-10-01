@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { fetchFanart, fetchScreenshots, fetchPosts } from "@/lib/fetchContent";
+import { fetchFanart, fetchScreenshots, fetchPosts } from "@/lib/fetchContentSecure";
 import ContentCarousel from "@/components/ContentCarousel";
+import ReviewCarousel from "@/components/ReviewCarousel";
 
 export default async function HomePage() {
   const [fanart, screenshots, posts] = await Promise.all([
@@ -15,6 +16,11 @@ export default async function HomePage() {
       <section style={{ marginBottom: "3rem" }}>
         <h1>Welcome to Airona Cult</h1>
         <p>A community hub for everyone who loves and adores Airona ✨</p>
+      </section>
+
+      {/* --- Review Carousel --- */}
+      <section style={{ marginBottom: "3rem" }}>
+        <ReviewCarousel />
       </section>
 
       {/* --- Fanart Section --- */}

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Box, Container, Typography, Button } from "@mui/material";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 
 const TransformWrapper = dynamic(
@@ -92,11 +93,14 @@ export default function GamePage() {
                   sx={{ width: "100%", height: "100%", position: "relative" }}
                   onClick={handleMapClick}
                 >
-                  <img
+                  <Image
                     src="/map/asterplain.jpg"
                     alt="Map"
+                    width={4000}
+                    height={3000}
                     style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
                     loading="eager"
+                    priority
                   />
 
                   {guess && (

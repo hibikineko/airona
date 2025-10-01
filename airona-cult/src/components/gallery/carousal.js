@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Box, IconButton } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import Image from "next/image";
 
 const Carousal = ({ imageUrls = [] }) => {
     const [current, setCurrent] = useState(0);
@@ -70,9 +71,11 @@ const Carousal = ({ imageUrls = [] }) => {
                     justifyContent: "center",
                 }}
             >
-                <img
+                <Image
                     src={imageUrls[current]}
                     alt={`carousel-img-${current}`}
+                    width={800}
+                    height={600}
                     style={{
                         maxWidth: "100%",
                         maxHeight: "100%",
