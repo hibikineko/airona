@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { supabase } from "../lib/supabaseClient";
 
 export default function ImageUploader() {
@@ -41,7 +42,7 @@ export default function ImageUploader() {
       {imageUrl && (
         <div>
           <p>Uploaded Image:</p>
-          <img src={imageUrl} alt="Fanart" width="300" />
+          <Image src={imageUrl} alt="Fanart" width={300} height={200} style={{objectFit: "contain"}} />
         </div>
       )}
     </div>

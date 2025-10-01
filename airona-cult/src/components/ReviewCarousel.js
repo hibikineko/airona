@@ -102,7 +102,7 @@ export default function ReviewCarousel() {
                 justifyContent: "center"
               }}
             >
-              "{reviews[currentReview].quote}"
+              &quot;{reviews[currentReview].quote}&quot;
             </Typography>
             <Typography 
               variant="h6" 
