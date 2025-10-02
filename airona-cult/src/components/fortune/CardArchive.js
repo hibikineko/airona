@@ -110,86 +110,8 @@ const CardArchive = () => {
   };
 
   const handleCardClick = (card) => {
-    if (dismantleMode) {
-      handleCardSelection(card);
-    } else {
-      setSelectedCard(card);
-      setDetailOpen(true);
-    }
-  };
-
-  const handleCardSelection = (card) => {
-    if (card.user_quantity <= 1) return; // Can't select cards with only 1 copy
-    
-    const cardId = card.card_id.toString();
-    const maxSelectable = card.user_quantity - 1; // Keep at least 1 copy
-    const currentSelected = selectedCards[cardId] || 0;
-    
-    // Cycle through selection: 0 -> 1 -> 2 -> ... -> max -> 0
-    let newSelected;
-    if (currentSelected >= maxSelectable) {
-      newSelected = 0; // Reset to 0 if at max
-    } else {
-      newSelected = currentSelected + 1; // Increment selection
-    }
-    
-    setSelectedCards(prev => ({
-      ...prev,
-      [cardId]: newSelected
-    }));
-  };
-
-  const handleDismantleMode = () => {
-    setDismantleMode(!dismantleMode);
-    setSelectedCards({});
-  };
-
-  const handleDismantle = async () => {
-    const validation = getDismantleValidation();
-    if (!validation.isValid) return;
-
-    try {
-      setDismantling(true);
-      
-      // Convert selectedCards object to API format
-      const dismantleData = Object.entries(selectedCards)
-        .filter(([cardId, quantity]) => quantity > 0)
-        .map(([cardId, quantity]) => ({
-          cardId: parseInt(cardId),
-          quantity
-        }));
-
-      const response = await fetch('/api/fortune/dismantle', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          dismantleData
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Dismantling failed');
-      }
-
-      const result = await response.json();
-      
-      // Reset state and refresh data
-      setDismantleMode(false);
-      setSelectedCards({});
-      await fetchArchive();
-      
-      // Show success message (you might want to add a toast notification here)
-      alert(`Successfully dismantled cards and received ${result.coinsEarned} Airona Coin${result.coinsEarned > 1 ? 's' : ''}!`);
-      
-    } catch (error) {
-      console.error('Dismantling error:', error);
-      alert('Failed to dismantle cards: ' + error.message);
-    } finally {
-      setDismantling(false);
-    }
+    setSelectedCard(card);
+    setDetailOpen(true);
   };
 
   const getRarityIcon = (rarity) => {
@@ -468,7 +390,11 @@ const CardArchive = () => {
                   </CardContent>
 
                   <CardActions>
-                    <Button size="small" startIcon={<Visibility />}>
+                    <Button 
+                      size="small" 
+                      startIcon={<Visibility />}
+                      onClick={() => handleCardClick(card)}
+                    >
                       View Details
                     </Button>
                   </CardActions>
