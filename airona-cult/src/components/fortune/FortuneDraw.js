@@ -625,7 +625,7 @@ const FortuneDraw = () => {
                         color="text.secondary"
                         sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
                       >
-                        "                        &ldquo;I have a special blessing waiting just for you today! ✨&rdquo;"
+                        &ldquo;I have a special blessing waiting just for you today! ✨&rdquo;
                       </Typography>
                     </Box>
                   </Box>

@@ -315,7 +315,7 @@ const FortuneCard = ({
                         fontSize: size === 'small' ? '0.7rem' : undefined
                       }}
                     >
-                      "                      &ldquo;{card.fortune_message}&rdquo;"
+                      &ldquo;{card.fortune_message}&rdquo;
                     </Typography>
                   </Box>
                 </>
