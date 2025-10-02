@@ -68,10 +68,17 @@ const FortuneCollection = () => {
 
   // Dismantling state
   const [dismantleMode, setDismantleMode] = useState(false);
-  const [selectedCards, setSelectedCards] = useState(new Set());
+  const [selectedCards, setSelectedCards] = useState({}); // Changed to object: {cardId: selectedQuantity}
   const [dismantleDialog, setDismantleDialog] = useState(false);
   const [dismantling, setDismantling] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  // Dismantling requirements and rewards
+  const dismantleRequirements = {
+    elite: { required: 5, reward: 1 },
+    super_rare: { required: 3, reward: 1 },
+    ultra_rare: { required: 1, reward: 1 }
+  };
 
   // Fetch collection data
   const fetchCollection = useCallback(async () => {
@@ -141,42 +148,98 @@ const FortuneCollection = () => {
   // Dismantling functions
   const toggleDismantleMode = () => {
     setDismantleMode(!dismantleMode);
-    setSelectedCards(new Set());
+    setSelectedCards({});
   };
 
-  const toggleCardSelection = (cardId) => {
-    const newSelected = new Set(selectedCards);
-    if (newSelected.has(cardId)) {
-      newSelected.delete(cardId);
+  const handleCardSelection = (userCard) => {
+    if (userCard.quantity <= 1) return; // Can't select cards with only 1 copy
+    
+    const cardId = userCard.cards.id.toString();
+    const maxSelectable = userCard.quantity - 1; // Keep at least 1 copy
+    const currentSelected = selectedCards[cardId] || 0;
+    
+    // Cycle through selection: 0 -> 1 -> 2 -> ... -> max -> 0
+    let newSelected;
+    if (currentSelected >= maxSelectable) {
+      newSelected = 0; // Reset to 0 if at max
     } else {
-      newSelected.add(cardId);
+      newSelected = currentSelected + 1; // Increment selection
     }
-    setSelectedCards(newSelected);
+    
+    setSelectedCards(prev => ({
+      ...prev,
+      [cardId]: newSelected
+    }));
+  };
+
+  // Calculate dismantle validation
+  const getDismantleValidation = () => {
+    const counts = {};
+    let totalSelected = 0;
+    
+    // Count selected cards by rarity
+    Object.entries(selectedCards).forEach(([cardId, selectedQuantity]) => {
+      if (selectedQuantity > 0) {
+        const userCard = filteredCards.find(uc => uc.cards.id.toString() === cardId);
+        if (userCard) {
+          const rarity = userCard.cards.rarity;
+          counts[rarity] = (counts[rarity] || 0) + selectedQuantity;
+          totalSelected += selectedQuantity;
+        }
+      }
+    });
+
+    // Check if exactly one rarity requirement is met
+    const validCombinations = Object.entries(dismantleRequirements).filter(([rarity, req]) => {
+      return counts[rarity] === req.required;
+    });
+
+    const isValid = validCombinations.length === 1 && 
+                   totalSelected === validCombinations[0][1].required;
+
+    return {
+      isValid,
+      counts,
+      validCombination: validCombinations[0] || null,
+      totalSelected
+    };
   };
 
   const selectAllCards = () => {
-    const allSelectableCards = filteredCards
-      .filter(userCard => userCard.quantity && userCard.quantity > 1)
-      .map(userCard => userCard.cards.id);
-    setSelectedCards(new Set(allSelectableCards));
+    const newSelection = {};
+    filteredCards.forEach(userCard => {
+      if (userCard.quantity && userCard.quantity > 1) {
+        newSelection[userCard.cards.id.toString()] = 1; // Select 1 copy of each eligible card
+      }
+    });
+    setSelectedCards(newSelection);
   };
 
   const deselectAllCards = () => {
-    setSelectedCards(new Set());
+    setSelectedCards({});
   };
 
   const handleDismantle = async () => {
-    if (selectedCards.size === 0) return;
+    const validation = getDismantleValidation();
+    if (!validation.isValid) return;
 
     setDismantling(true);
     try {
+      // Convert selectedCards object to API format
+      const dismantleData = Object.entries(selectedCards)
+        .filter(([cardId, quantity]) => quantity > 0)
+        .map(([cardId, quantity]) => ({
+          cardId: parseInt(cardId),
+          quantity
+        }));
+
       const response = await fetch('/api/fortune/dismantle', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          cardIds: Array.from(selectedCards)
+          dismantleData
         })
       });
 
@@ -194,7 +257,7 @@ const FortuneCollection = () => {
       });
 
       // Reset selection and refresh collection
-      setSelectedCards(new Set());
+      setSelectedCards({});
       setDismantleDialog(false);
       setDismantleMode(false);
       await fetchCollection();
@@ -211,46 +274,29 @@ const FortuneCollection = () => {
   };
 
   const calculateDismantleRewards = () => {
-    let totalCoins = 0;
-    const details = [];
+    const validation = getDismantleValidation();
+    
+    if (!validation.isValid) {
+      return { totalCoins: 0, details: [], validation };
+    }
 
-    selectedCards.forEach(cardId => {
-      const userCard = filteredCards.find(uc => uc.cards.id === cardId);
-      if (!userCard || !userCard.quantity || userCard.quantity <= 1) return;
-
-      let coinsPerCard, requiredCards;
-      switch (userCard.cards.rarity) {
-        case 'elite':
-          coinsPerCard = 1;
-          requiredCards = 3;
-          break;
-        case 'super_rare':
-          coinsPerCard = 2;
-          requiredCards = 4;
-          break;
-        case 'ultra_rare':
-          coinsPerCard = 1;
-          requiredCards = 5;
-          break;
-        default:
-          return;
-      }
-
-      const availableForDismantling = userCard.quantity - 1;
-      const setsToDismantle = Math.floor(availableForDismantling / requiredCards);
-      if (setsToDismantle > 0) {
-        const coins = setsToDismantle * coinsPerCard;
-        totalCoins += coins;
-        details.push({
+    const coinsEarned = validation.validCombination[1].reward;
+    const selectedBreakdown = Object.entries(selectedCards)
+      .filter(([cardId, quantity]) => quantity > 0)
+      .map(([cardId, quantity]) => {
+        const userCard = filteredCards.find(uc => uc.cards.id.toString() === cardId);
+        return {
           name: userCard.cards.name,
           rarity: userCard.cards.rarity,
-          sets: setsToDismantle,
-          coins: coins
-        });
-      }
-    });
+          quantity: quantity
+        };
+      });
 
-    return { totalCoins, details };
+    return { 
+      totalCoins: coinsEarned, 
+      details: selectedBreakdown, 
+      validation 
+    };
   };
 
   if (status === 'loading' || collectionState.loading) {
@@ -602,26 +648,41 @@ const FortuneCollection = () => {
               )}
             </Box>
             
-            {dismantleMode && selectedCards.size > 0 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  {selectedCards.size} card{selectedCards.size !== 1 ? 's' : ''} selected
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="warning"
-                  onClick={() => setDismantleDialog(true)}
-                  startIcon={<MonetizationOn />}
-                >
-                  Dismantle Selected
-                </Button>
-              </Box>
-            )}
+            {dismantleMode && (() => {
+              const validation = getDismantleValidation();
+              return validation.totalSelected > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {validation.totalSelected} card{validation.totalSelected !== 1 ? 's' : ''} selected
+                  </Typography>
+                  {Object.entries(validation.counts).map(([rarity, count]) => (
+                    <Chip
+                      key={rarity}
+                      label={`${count} ${rarity.replace('_', ' ')}`}
+                      size="small"
+                      sx={{ 
+                        backgroundColor: rarity === 'ultra_rare' ? '#FFD700' : rarity === 'super_rare' ? '#9932CC' : '#32CD32',
+                        color: 'white'
+                      }}
+                    />
+                  ))}
+                  <Button
+                    variant="contained"
+                    color={validation.isValid ? "success" : "warning"}
+                    onClick={() => setDismantleDialog(true)}
+                    startIcon={<MonetizationOn />}
+                    disabled={!validation.isValid}
+                  >
+                    {validation.isValid ? 'Dismantle Selected' : `Need exact amounts`}
+                  </Button>
+                </Box>
+              );
+            })()}
           </Box>
           
           {dismantleMode && (
             <Alert severity="info" sx={{ mt: 2 }}>
-              Select duplicate cards to dismantle them for Airona Coins. You need at least 4-6 copies to dismantle (1 copy will always be kept).
+              Select duplicate cards to dismantle for Airona Coins. Click multiple times to select more copies. Requirements: <strong>5 Elite OR 3 Super Rare OR 1 Ultra Rare</strong> (1 copy will always be kept).
             </Alert>
           )}
         </Paper>
@@ -646,15 +707,112 @@ const FortuneCollection = () => {
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   <Box sx={{ position: 'relative' }}>
-                    <FortuneCard 
-                      card={userCard.cards}
-                      isRevealed={true}
-                      size={isMobile ? "small" : "medium"}
-                      showFullDetails={false}
-                    />
+                    <Box 
+                      sx={{ 
+                        cursor: dismantleMode && userCard.quantity > 1 ? 'pointer' : 'default',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: dismantleMode && userCard.quantity > 1 ? 'scale(1.02)' : 'none'
+                        }
+                      }}
+                      onClick={() => dismantleMode && handleCardSelection(userCard)}
+                    >
+                      <FortuneCard 
+                        card={userCard.cards}
+                        isRevealed={true}
+                        size={isMobile ? "small" : "medium"}
+                        showFullDetails={false}
+                      />
+                    </Box>
                     
-                    {/* Dismantling Checkbox */}
+                    {/* Dismantling Selection Overlay */}
                     {dismantleMode && (
+                      <>
+                        {(() => {
+                          const cardId = userCard.cards.id.toString();
+                          const selectedQuantity = selectedCards[cardId] || 0;
+                          const maxSelectable = userCard.quantity > 1 ? userCard.quantity - 1 : 0;
+                          const canDismantle = maxSelectable > 0;
+                          const isSelected = selectedQuantity > 0;
+                          
+                          return (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundColor: isSelected 
+                                  ? 'rgba(211, 47, 47, 0.3)' 
+                                  : canDismantle 
+                                    ? 'rgba(25, 118, 210, 0.1)' 
+                                    : 'rgba(0, 0, 0, 0.5)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 1,
+                                border: isSelected ? 2 : 0,
+                                borderColor: 'error.main',
+                                pointerEvents: 'none' // Allow clicks to pass through to parent
+                              }}
+                            >
+                              {isSelected && (
+                                <Box
+                                  sx={{
+                                    backgroundColor: 'error.main',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    width: { xs: 30, sm: 40 },
+                                    height: { xs: 30, sm: 40 },
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 'bold',
+                                    fontSize: { xs: '1rem', sm: '1.2rem' }
+                                  }}
+                                >
+                                  {selectedQuantity}
+                                </Box>
+                              )}
+                              {canDismantle && !isSelected && (
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: 'primary.main', 
+                                    fontWeight: 'bold', 
+                                    backgroundColor: 'rgba(255,255,255,0.9)', 
+                                    px: 1, 
+                                    borderRadius: 1,
+                                    fontSize: { xs: '0.6rem', sm: '0.75rem' }
+                                  }}
+                                >
+                                  Click (max {maxSelectable})
+                                </Typography>
+                              )}
+                              {!canDismantle && (
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: 'white', 
+                                    fontWeight: 'bold', 
+                                    backgroundColor: 'rgba(0,0,0,0.7)', 
+                                    px: 1, 
+                                    borderRadius: 1,
+                                    fontSize: { xs: '0.6rem', sm: '0.75rem' }
+                                  }}
+                                >
+                                  Need 2+ copies
+                                </Typography>
+                              )}
+                            </Box>
+                          );
+                        })()}
+                      </>
+                    )}
+                    
+                    {/* Original Dismantling Checkbox - Remove this */}
+                    {false && dismantleMode && (
                       <Box sx={{
                         position: 'absolute',
                         top: { xs: 4, sm: 8 },
@@ -664,9 +822,9 @@ const FortuneCollection = () => {
                         p: 0.5
                       }}>
                         <Checkbox
-                          checked={selectedCards.has(userCard.cards.id)}
-                          onChange={() => toggleCardSelection(userCard.cards.id)}
-                          disabled={!userCard.quantity || userCard.quantity <= 1}
+                          checked={false}
+                          onChange={() => {}}
+                          disabled={true}
                           size="small"
                           sx={{ 
                             color: 'white',
@@ -676,20 +834,18 @@ const FortuneCollection = () => {
                       </Box>
                     )}
                     
-                    {/* Quantity Display */}
-                    {userCard.quantity && userCard.quantity > 1 && (
-                      <Chip
-                        label={`x${userCard.quantity}`}
-                        size="small"
-                        color="secondary"
-                        sx={{
-                          position: 'absolute',
-                          bottom: { xs: 4, sm: 8 },
-                          left: { xs: 4, sm: 8 },
-                          fontWeight: 'bold'
-                        }}
-                      />
-                    )}
+                    {/* Quantity Display - Always show, moved to top right */}
+                    <Chip
+                      label={`x${userCard.quantity || 1}`}
+                      size="small"
+                      color="secondary"
+                      sx={{
+                        position: 'absolute',
+                        bottom: { xs: 4, sm: 8 },
+                        left: { xs: 4, sm: 8 },
+                        fontWeight: 'bold'
+                      }}
+                    />
                     
                     {/* Draw Info */}
                     <Box sx={{ 
@@ -708,12 +864,7 @@ const FortuneCollection = () => {
                           sx={{ fontSize: { xs: '0.5rem', sm: '0.6rem' } }}
                         />
                       )}
-                      <Chip 
-                        label={new Date(userCard.drawn_date).toLocaleDateString()}
-                        size="small"
-                        variant="outlined"
-                        sx={{ fontSize: { xs: '0.5rem', sm: '0.6rem' } }}
-                      />
+                      {/* Removed date display - now showing quantity instead */}
                     </Box>
                   </Box>
                 </motion.div>
@@ -789,34 +940,62 @@ const FortuneCollection = () => {
           </Box>
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Are you sure you want to dismantle {selectedCards.size} card{selectedCards.size !== 1 ? 's' : ''}?
-          </Typography>
-          
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 1, 
-            p: 2, 
-            backgroundColor: 'primary.main',
-            color: 'primary.contrastText',
-            borderRadius: 1,
-            mb: 2
-          }}>
-            <Image 
-              src="/airona/airona_coin.png" 
-              alt="Airona Coin" 
-              width={24} 
-              height={24} 
-            />
-            <Typography variant="h6">
-              +{calculateDismantleRewards()} Airona Coins
-            </Typography>
-          </Box>
-          
-          <Typography variant="body2" color="text.secondary">
-            This action cannot be undone. Dismantled cards will be permanently removed from your collection.
-          </Typography>
+          {(() => {
+            const rewards = calculateDismantleRewards();
+            return (
+              <>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  Are you sure you want to dismantle {rewards.validation.totalSelected} card{rewards.validation.totalSelected !== 1 ? 's' : ''}?
+                </Typography>
+                
+                {/* Selection breakdown */}
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Selected cards:
+                  </Typography>
+                  {rewards.details.map((item, index) => (
+                    <Chip
+                      key={index}
+                      label={`${item.name} x${item.quantity}`}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        mr: 1,
+                        mb: 0.5,
+                        borderColor: item.rarity === 'ultra_rare' ? '#FFD700' : item.rarity === 'super_rare' ? '#9932CC' : '#32CD32',
+                        color: item.rarity === 'ultra_rare' ? '#FFD700' : item.rarity === 'super_rare' ? '#9932CC' : '#32CD32'
+                      }}
+                    />
+                  ))}
+                </Box>
+                
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1, 
+                  p: 2, 
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                  borderRadius: 1,
+                  mb: 2
+                }}>
+                  <Image 
+                    src="/airona/airona_coin.png" 
+                    alt="Airona Coin" 
+                    width={24} 
+                    height={24} 
+                  />
+                  <Typography variant="h6">
+                    +{rewards.totalCoins} Airona Coin{rewards.totalCoins !== 1 ? 's' : ''}
+                  </Typography>
+                </Box>
+                
+                <Typography variant="body2" color="text.secondary">
+                  This action cannot be undone. Dismantled cards will be permanently removed from your collection.
+                </Typography>
+              </>
+            );
+          })()}
         </DialogContent>
         <DialogActions>
           <Button 
@@ -829,7 +1008,7 @@ const FortuneCollection = () => {
             onClick={handleDismantle}
             variant="contained"
             color="primary"
-            disabled={dismantling || selectedCards.size === 0}
+            disabled={dismantling || !getDismantleValidation().isValid}
             startIcon={dismantling ? <CircularProgress size={20} /> : <MonetizationOn />}
           >
             {dismantling ? 'Dismantling...' : 'Dismantle'}

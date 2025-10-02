@@ -30,13 +30,14 @@ export async function GET(request) {
     const page = parseInt(searchParams.get('page') || '0');
     const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '20'), 50);
 
-    // Get user's collected cards with card details
+    // Get user's collected cards with card details and quantities
     const { data: userCards, error } = await supabaseServer
       .from("user_cards")
       .select(`
         id,
         drawn_date,
         is_daily_draw,
+        quantity,
         cards (
           id,
           name,

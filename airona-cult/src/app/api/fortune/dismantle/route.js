@@ -1,207 +1,259 @@
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/route';
-import { supabaseServer } from '@/lib/supabaseServer';
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/route";
+import { supabaseServer } from "@/lib/supabaseServer";
+import { strictRateLimit } from "@/lib/rateLimit";
 
 export async function POST(request) {
+  // Apply strict rate limiting for dismantling
+  const rateLimitResult = strictRateLimit.check(request);
+  if (!rateLimitResult.success) {
+    return NextResponse.json(
+      { error: rateLimitResult.error }, 
+      { 
+        status: 429,
+        headers: {
+          'Retry-After': rateLimitResult.retryAfter.toString()
+        }
+      }
+    );
+  }
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: "Authentication required" },
         { status: 401 }
       );
     }
 
-    const { cardIds } = await request.json();
-    
-    if (!cardIds || !Array.isArray(cardIds) || cardIds.length === 0) {
+    const { dismantleData } = await request.json();
+    const discord_uid = session.user.id;
+
+    // Validate input - dismantleData should be array of {cardId, quantity}
+    if (!Array.isArray(dismantleData) || dismantleData.length === 0) {
       return NextResponse.json(
-        { error: 'No cards selected for dismantling' },
+        { error: "Invalid card selection" },
         { status: 400 }
       );
     }
 
-    const discord_uid = session.user.id;
+    // Extract card IDs and build quantity map
+    const cardIds = dismantleData.map(item => item.cardId);
+    const quantityMap = dismantleData.reduce((acc, item) => {
+      acc[item.cardId] = item.quantity;
+      return acc;
+    }, {});
 
-    // Start transaction
-    const { data: userCards, error: fetchError } = await supabaseServer
-      .from('user_cards')
+    // Dismantling requirements and rewards
+    const dismantleRequirements = {
+      elite: { required: 5, reward: 1 },
+      super_rare: { required: 3, reward: 1 },
+      ultra_rare: { required: 1, reward: 1 }
+    };
+
+    // Get user's cards that are being dismantled
+    const { data: userCards, error: cardsError } = await supabaseServer
+      .from("user_cards")
       .select(`
-        id,
         card_id,
         quantity,
-        cards!inner(
+        cards (
           id,
           name,
           rarity
         )
       `)
-      .eq('discord_uid', discord_uid)
-      .in('card_id', cardIds);
+      .eq("discord_uid", discord_uid)
+      .in("card_id", cardIds);
 
-    if (fetchError) {
-      console.error('Error fetching user cards:', fetchError);
+    if (cardsError) {
+      console.error("Error fetching user cards:", cardsError);
       return NextResponse.json(
-        { error: 'Failed to fetch user cards' },
+        { error: "Failed to fetch user cards" },
         { status: 500 }
       );
     }
 
-    // Validate dismantling rules
-    const dismantlingInfo = [];
-    let totalCoinsEarned = 0;
-
-    for (const userCard of userCards) {
-      const card = userCard.cards;
-      
-      // Cannot dismantle if user only has 1 copy
-      if (userCard.quantity <= 1) {
+    // Validate user owns all selected cards with sufficient quantity
+    for (const item of dismantleData) {
+      const userCard = userCards.find(uc => uc.card_id === item.cardId);
+      if (!userCard || userCard.quantity <= item.quantity) {
         return NextResponse.json(
-          { error: `Cannot dismantle "${card.name}" - you only have 1 copy. Must keep at least 1 copy of each card.` },
+          { error: `You don't have enough copies of card ${item.cardId} to dismantle ${item.quantity} copies. You have ${userCard?.quantity || 0}, need to keep at least 1.` },
           { status: 400 }
         );
       }
-
-      // Calculate coins based on rarity
-      let coinsPerCard;
-      let requiredCards;
-      
-      switch (card.rarity) {
-        case 'ultra_rare':
-          coinsPerCard = 1;
-          requiredCards = 1;
-          break;
-        case 'super_rare':
-          coinsPerCard = 1;
-          requiredCards = 3;
-          break;
-        case 'elite':
-          coinsPerCard = 1;
-          requiredCards = 5;
-          break;
-        default:
-          return NextResponse.json(
-            { error: `Unknown rarity: ${card.rarity}` },
-            { status: 400 }
-          );
-      }
-
-      // Calculate how many sets we can dismantle
-      const availableForDismantling = userCard.quantity - 1; // Keep at least 1
-      const setsToDismantle = Math.floor(availableForDismantling / requiredCards);
-      
-      if (setsToDismantle === 0) {
-        return NextResponse.json(
-          { error: `Cannot dismantle "${card.name}" - you need at least ${requiredCards + 1} copies (you have ${userCard.quantity})` },
-          { status: 400 }
-        );
-      }
-
-      const cardsToRemove = setsToDismantle * requiredCards;
-      const coinsToEarn = setsToDismantle * coinsPerCard;
-
-      dismantlingInfo.push({
-        userCardId: userCard.id,
-        cardId: card.id,
-        cardName: card.name,
-        rarity: card.rarity,
-        currentQuantity: userCard.quantity,
-        cardsToRemove,
-        newQuantity: userCard.quantity - cardsToRemove,
-        coinsEarned: coinsToEarn
-      });
-
-      totalCoinsEarned += coinsToEarn;
     }
 
-    if (totalCoinsEarned === 0) {
+    // Count total selected cards by rarity
+    const rarityCounts = {};
+    let totalSelectedCards = 0;
+    
+    dismantleData.forEach(item => {
+      const userCard = userCards.find(uc => uc.card_id === item.cardId);
+      if (userCard) {
+        const rarity = userCard.cards.rarity;
+        rarityCounts[rarity] = (rarityCounts[rarity] || 0) + item.quantity;
+        totalSelectedCards += item.quantity;
+      }
+    });
+
+    // Validate exactly one dismantling combination
+    const validCombinations = Object.entries(dismantleRequirements).filter(([rarity, req]) => {
+      return rarityCounts[rarity] === req.required;
+    });
+
+    if (validCombinations.length !== 1) {
       return NextResponse.json(
-        { error: 'No cards can be dismantled with current quantities' },
+        { error: "Invalid dismantling combination. You must select exactly 5 Elite, 3 Super Rare, or 1 Ultra Rare cards." },
         { status: 400 }
       );
     }
 
-    // Execute dismantling
-    const updates = [];
-    const transactionData = [];
+    const totalSelected = totalSelectedCards;
+    const [validRarity, validRequirement] = validCombinations[0];
+    
+    if (totalSelected !== validRequirement.required) {
+      return NextResponse.json(
+        { error: "Invalid dismantling selection. Only select the exact required amount." },
+        { status: 400 }
+      );
+    }
 
-    for (const info of dismantlingInfo) {
-      // Update card quantity
-      const { error: updateError } = await supabaseServer
-        .from('user_cards')
-        .update({ quantity: info.newQuantity })
-        .eq('id', info.userCardId);
+    // Start transaction by updating card quantities
+    const updatePromises = [];
+    const coinTransactionData = [];
 
-      if (updateError) {
-        console.error('Error updating card quantity:', updateError);
-        return NextResponse.json(
-          { error: 'Failed to update card quantities' },
-          { status: 500 }
+    for (const item of dismantleData) {
+      const userCard = userCards.find(uc => uc.card_id === item.cardId);
+      const newQuantity = userCard.quantity - item.quantity;
+      
+      if (newQuantity === 0) {
+        // Delete the user_card entry if quantity reaches 0
+        updatePromises.push(
+          supabaseServer
+            .from("user_cards")
+            .delete()
+            .eq("discord_uid", discord_uid)
+            .eq("card_id", userCard.card_id)
+        );
+      } else {
+        // Update quantity
+        updatePromises.push(
+          supabaseServer
+            .from("user_cards")
+            .update({ quantity: newQuantity })
+            .eq("discord_uid", discord_uid)
+            .eq("card_id", userCard.card_id)
         );
       }
 
-      updates.push({
-        cardName: info.cardName,
-        rarity: info.rarity,
-        cardsRemoved: info.cardsToRemove,
-        coinsEarned: info.coinsEarned
-      });
-
-      transactionData.push(info.cardId);
+      // Track for coin transaction log (repeat cardId for each copy dismantled)
+      for (let i = 0; i < item.quantity; i++) {
+        coinTransactionData.push(userCard.card_id);
+      }
     }
 
-    // Update user coin balance
-    const { error: coinError } = await supabaseServer
-      .from('users')
-      .update({ 
-        airona_coins: supabaseServer.raw(`airona_coins + ${totalCoinsEarned}`)
-      })
-      .eq('discord_uid', discord_uid);
+    // Execute all card quantity updates
+    const updateResults = await Promise.all(updatePromises);
+    
+    // Check for any errors in updates
+    for (const result of updateResults) {
+      if (result.error) {
+        console.error("Error updating card quantity:", result.error);
+        return NextResponse.json(
+          { error: "Failed to update card quantities" },
+          { status: 500 }
+        );
+      }
+    }
 
-    if (coinError) {
-      console.error('Error updating coin balance:', coinError);
+    // Add coins to user
+    const coinsEarned = validRequirement.reward;
+    const { data: currentUser } = await supabaseServer
+      .from("users")
+      .select("airona_coins")
+      .eq("discord_uid", discord_uid)
+      .single();
+
+    const newCoinBalance = (currentUser?.airona_coins || 0) + coinsEarned;
+
+    const { error: coinUpdateError } = await supabaseServer
+      .from("users")
+      .update({ airona_coins: newCoinBalance })
+      .eq("discord_uid", discord_uid);
+
+    if (coinUpdateError) {
+      console.error("Error updating coin balance:", coinUpdateError);
       return NextResponse.json(
-        { error: 'Failed to update coin balance' },
+        { error: "Failed to update coin balance" },
         { status: 500 }
       );
     }
 
-    // Log transaction
-    const { error: logError } = await supabaseServer
-      .from('coin_transactions')
+    // Log coin transaction
+    const { error: transactionError } = await supabaseServer
+      .from("coin_transactions")
       .insert({
         discord_uid,
         transaction_type: 'earned',
-        amount: totalCoinsEarned,
-        reason: `Dismantled ${updates.length} card type(s)`,
-        related_card_ids: transactionData
+        amount: coinsEarned,
+        reason: `Dismantled ${validRequirement.required} ${validRarity} cards`,
+        related_card_ids: coinTransactionData
       });
 
-    if (logError) {
-      console.error('Error logging transaction:', logError);
-      // Don't fail the whole operation for logging errors
+    if (transactionError) {
+      console.error("Error logging coin transaction:", transactionError);
+      // Don't fail the request for logging errors
     }
 
-    // Get updated coin balance
-    const { data: updatedUser } = await supabaseServer
-      .from('users')
-      .select('airona_coins')
-      .eq('discord_uid', discord_uid)
-      .single();
+    // Update user stats - decrease cards_collected for cards that were completely removed
+    const cardsCompletelyRemoved = dismantleData.filter(item => {
+      const userCard = userCards.find(uc => uc.card_id === item.cardId);
+      return userCard && userCard.quantity === item.quantity;
+    }).length;
+    
+    if (cardsCompletelyRemoved > 0) {
+      const { data: currentStats } = await supabaseServer
+        .from("user_stats")
+        .select("cards_collected")
+        .eq("discord_uid", discord_uid)
+        .single();
+
+      const newCardsCollected = Math.max(0, (currentStats?.cards_collected || 0) - cardsCompletelyRemoved);
+
+      await supabaseServer
+        .from("user_stats")
+        .upsert({
+          discord_uid,
+          cards_collected: newCardsCollected
+        }, {
+          onConflict: 'discord_uid'
+        });
+    }
 
     return NextResponse.json({
       success: true,
-      message: `Successfully dismantled cards and earned ${totalCoinsEarned} Airona Coins!`,
-      updates,
-      totalCoinsEarned,
-      newBalance: updatedUser?.airona_coins || 0
+      coinsEarned,
+      newCoinBalance,
+      dismantledCards: dismantleData.map(item => {
+        const userCard = userCards.find(uc => uc.card_id === item.cardId);
+        return {
+          id: item.cardId,
+          name: userCard.cards.name,
+          rarity: userCard.cards.rarity,
+          quantity: item.quantity
+        };
+      }),
+      message: `Successfully dismantled ${totalSelected} cards and earned ${coinsEarned} Airona Coin${coinsEarned > 1 ? 's' : ''}!`
     });
 
   } catch (error) {
-    console.error('Dismantling API error:', error);
+    console.error("Dismantling API error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

@@ -178,8 +178,8 @@ const FortuneDraw = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          banner_type: selectedBanner,
-          use_coin: useCoin
+          bannerType: selectedBanner,
+          useCoin: useCoin
         })
       });
       
