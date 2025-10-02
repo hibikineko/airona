@@ -5,6 +5,7 @@ import { ThemeProvider, CssBaseline } from "@mui/material";
 import getAironaTheme from "../theme/aironaTheme";
 import Header from "@/components/layout/header";
 import { SessionProvider } from "next-auth/react";
+import { Analytics } from '@vercel/analytics/next';
 
 export default function RootLayout({ children }) {
   const [mode, setMode] = useState("light");
@@ -58,6 +59,7 @@ export default function RootLayout({ children }) {
           <SessionProvider>
           <Header toggleMode={toggleMode} />
           {children}
+          <Analytics />
           </SessionProvider>
         </ThemeProvider>
       </body>

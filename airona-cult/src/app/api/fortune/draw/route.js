@@ -269,12 +269,16 @@ export async function POST(request) {
 
     // Update pity counters
     const newPityCounters = {};
+    
+    // Be explicit about field names to avoid any issues
+    const pityFieldName = bannerType === 'limited' ? 'limited_pity_counter' : 'standard_pity_counter';
+    
     if (selectedCard.rarity === 'ultra_rare') {
       // Reset pity counter for this banner
-      newPityCounters[`${bannerType}_pity_counter`] = 0;
+      newPityCounters[pityFieldName] = 0;
     } else {
       // Increment pity counter for this banner
-      newPityCounters[`${bannerType}_pity_counter`] = (pityCounter + 1);
+      newPityCounters[pityFieldName] = (pityCounter + 1);
     }
 
     // Update user stats
