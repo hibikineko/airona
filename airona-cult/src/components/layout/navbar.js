@@ -12,6 +12,8 @@ import InfoIcon from '@mui/icons-material/Info';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CasinoIcon from '@mui/icons-material/Casino';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import StyleIcon from '@mui/icons-material/Style';
+import CollectionsIcon from '@mui/icons-material/Collections';
 
 const navOptions = [
     { label: 'Home', icon: <HomeIcon />, path: '/' },
@@ -19,6 +21,8 @@ const navOptions = [
     { label: 'Guild', icon: <HomeIcon />, path: '/guild' },
     { label: 'Airona Clicker', icon: <SportsEsportsIcon />, path: '/game/clicker' },
     { label: 'Airona Memory Flip', icon: <CasinoIcon />, path: '/game/card' },
+    { label: 'Fortune Cards', icon: <StyleIcon />, path: '/game/fortune/draw' },
+    { label: 'Card Collection', icon: <CollectionsIcon />, path: '/game/fortune/collection' },
     { label: 'Latest News', icon: <NewspaperIcon />, path: '/maintenance' },
     { label: 'Upcoming Events', icon: <EventIcon />, path: '/maintenance' },
     { label: 'Cultist Profiles', icon: <ForumIcon />, path: '/maintenance' },

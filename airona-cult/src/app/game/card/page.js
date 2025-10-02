@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import {
   Box,
@@ -46,11 +46,11 @@ export default function AironaMemory() {
   const [scatterCountdown, setScatterCountdown] = useState(5);
   const [positions, setPositions] = useState([]);
 
-  const difficulties = {
+  const difficulties = useMemo(() => ({
     easy: { time: 120, moves: 40 },
     hard: { time: 60, moves: 25 },
     nightmare: { time: 60, moves: 25 },
-  };
+  }), []);
 
   const startGame = (mode) => {
     const shuffled = shuffle([...stickers, ...stickers]);
@@ -90,27 +90,8 @@ export default function AironaMemory() {
     return () => clearTimeout(t);
   }, [timeLeft, started, gameOver, previewing]);
 
-  // Scatter for nightmare
-  useEffect(() => {
-    if (difficulty !== "nightmare" || !started || gameOver || previewing || matched.length === cards.length)
-      return;
-
-    const interval = setInterval(() => {
-      setScatterCountdown((c) => c - 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [difficulty, started, gameOver, previewing, matched, cards]);
-
-  useEffect(() => {
-    if (difficulty !== "nightmare") return;
-    if (scatterCountdown <= 0) {
-      scatterCards();
-      setScatterCountdown(5);
-    }
-  }, [scatterCountdown, difficulty]);
-
-  const scatterCards = () => {
+  // Define scatterCards function before it's used in useEffect
+  const scatterCards = useCallback(() => {
     setCards((prev) => {
       const unmatchedIndexes = prev
         .map((c, i) => (matched.includes(i) ? null : i))
@@ -141,7 +122,27 @@ export default function AironaMemory() {
 
       return newCards;
     });
-  };
+  }, [matched]);
+
+  // Scatter for nightmare
+  useEffect(() => {
+    if (difficulty !== "nightmare" || !started || gameOver || previewing || matched.length === cards.length)
+      return;
+
+    const interval = setInterval(() => {
+      setScatterCountdown((c) => c - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [difficulty, started, gameOver, previewing, matched, cards]);
+
+  useEffect(() => {
+    if (difficulty !== "nightmare") return;
+    if (scatterCountdown <= 0) {
+      scatterCards();
+      setScatterCountdown(5);
+    }
+  }, [scatterCountdown, difficulty, scatterCards]);
 
   const handleFlip = (index) => {
     if (gameOver || previewing) return;
