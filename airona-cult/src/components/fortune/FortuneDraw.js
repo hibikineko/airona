@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Box,
@@ -46,16 +46,7 @@ const FortuneDraw = () => {
   });
 
   // Fetch user stats and game state
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchGameState();
-    } else if (status === 'unauthenticated') {
-      // Stop loading for unauthenticated users
-      setGameState(prev => ({ ...prev, loading: false }));
-    }
-  }, [status]);
-
-  const fetchGameState = async () => {
+  const fetchGameState = useCallback(async () => {
     try {
       const response = await fetch('/api/fortune/stats');
       if (!response.ok) throw new Error('Failed to fetch game state');
@@ -70,9 +61,8 @@ const FortuneDraw = () => {
         loading: false
       }));
 
-      // Start countdown if user can't draw
-      if (!data.gameState?.canDrawToday && !data.gameState?.isOwner) {
-        startCountdown();
+      // Check if there's already a card drawn today
+      if (data.gameState?.hasDrawnToday && !data.gameState?.canDrawToday) {
         fetchTodaysCard();
       }
     } catch (error) {
@@ -82,10 +72,19 @@ const FortuneDraw = () => {
         loading: false
       }));
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchGameState();
+    } else if (status === 'unauthenticated') {
+      // Stop loading for unauthenticated users
+      setGameState(prev => ({ ...prev, loading: false }));
+    }
+  }, [status, fetchGameState]);
 
   // Countdown timer logic
-  const startCountdown = () => {
+  const startCountdown = useCallback(() => {
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
@@ -113,8 +112,8 @@ const FortuneDraw = () => {
           seconds: 0,
           isActive: false
         });
-        // Refresh game state when countdown ends
-        fetchGameState();
+        // Refresh game state when countdown ends - just trigger a state update
+        setGameState(prev => ({ ...prev, canDraw: true }));
       }
     };
     
@@ -122,7 +121,7 @@ const FortuneDraw = () => {
     const interval = setInterval(updateCountdown, 1000);
     
     return () => clearInterval(interval);
-  };
+  }, []);
 
   // Countdown effect
   useEffect(() => {
@@ -131,7 +130,7 @@ const FortuneDraw = () => {
       cleanup = startCountdown();
     }
     return cleanup;
-  }, [gameState.canDraw, gameState.isOwner, gameState.stats]);
+  }, [gameState.canDraw, gameState.isOwner, gameState.stats, startCountdown]);
 
   const fetchTodaysCard = async () => {
     try {
@@ -223,7 +222,7 @@ const FortuneDraw = () => {
               px: { xs: 1, sm: 0 }
             }}
           >
-            Draw your daily card and discover Airona's wisdom!
+            Draw your daily card and discover Airona&apos;s wisdom!
           </Typography>
           
           <Paper sx={{ 
@@ -301,7 +300,7 @@ const FortuneDraw = () => {
             gutterBottom
             sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}
           >
-            🔮 Airona's Fortune Blessing
+            🔮 Airona&apos;s Fortune Blessing
           </Typography>
           
           {/* Airona Mascot */}
@@ -319,7 +318,7 @@ const FortuneDraw = () => {
             >
               <Image
                 src="/airona/airona_heart.png"
-                alt="Airona's Blessing"
+                alt="Airona&apos;s Blessing"
                 width={isMobile ? 80 : 120}
                 height={isMobile ? 80 : 120}
                 style={{ 
@@ -382,10 +381,10 @@ const FortuneDraw = () => {
             }}
           >
             {gameState.drawnCard ? 
-              "Your today's blessing has been revealed!" :
+              `Your today's blessing has been revealed!` :
               gameState.canDraw ? 
-                "Receive Airona's divine blessing for today!" :
-                "Airona's blessing awaits you tomorrow!"
+                `Receive Airona's divine blessing for today!` :
+                `Airona's blessing awaits you tomorrow!`
             }
           </Typography>
         </motion.div>
@@ -619,14 +618,14 @@ const FortuneDraw = () => {
                         gutterBottom
                         sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
                       >
-                        Get Airona's Blessing!
+                        Get Airona&apos;s Blessing!
                       </Typography>
                       <Typography 
                         variant="body2" 
                         color="text.secondary"
                         sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
                       >
-                        "I have a special blessing waiting just for you today! ✨"
+                        "                        &ldquo;I have a special blessing waiting just for you today! ✨&rdquo;"
                       </Typography>
                     </Box>
                   </Box>
@@ -719,9 +718,51 @@ const FortuneDraw = () => {
                       fontWeight: 'bold',
                       fontSize: { xs: '0.8rem', sm: '0.9rem' },
                       px: { xs: 1.5, sm: 2 },
-                      py: 1
+                      py: 1,
+                      mb: 2
                     }}
                   />
+                  
+                  {/* Navigation buttons for when blessing is recharging */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: 2, 
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                    mt: 2
+                  }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => router.push('/game/fortune/collection')}
+                      sx={{
+                        borderColor: 'rgba(175, 82, 222, 0.5)',
+                        color: '#af52de',
+                        fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                        px: { xs: 2, sm: 3 },
+                        '&:hover': {
+                          borderColor: '#af52de',
+                          backgroundColor: 'rgba(175, 82, 222, 0.1)'
+                        }
+                      }}
+                    >
+                      ✨ View Collection
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={() => router.push('/game/fortune/leaderboard')}
+                      sx={{
+                        background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                        color: '#000',
+                        fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                        px: { xs: 2, sm: 3 },
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #FFA500, #FF8C00)',
+                        }
+                      }}
+                    >
+                      🏆 Leaderboard
+                    </Button>
+                  </Box>
                 </Paper>
               </motion.div>
             )}

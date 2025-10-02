@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   Container,
   Typography,
@@ -64,13 +65,13 @@ export default function CultRulesPage() {
     <Container maxWidth="md" sx={{ py: 4 }}>
       {/* Header Section */}
       <Box textAlign="center" sx={{ mb: 6 }}>
-        <Box sx={{ position: "relative", mb: 3 }}>
-          <img
+        <Box sx={{ position: "relative", mb: 3, display: "flex", justifyContent: "center" }}>
+          <Image
             src="/airona/airona_logo.png"
             alt="Airona Logo"
+            width={120}
+            height={120}
             style={{
-              width: "120px",
-              height: "120px",
               borderRadius: "50%",
               border: `4px solid ${theme.palette.primary.main}`,
               boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.3)}`,
@@ -159,12 +160,12 @@ export default function CultRulesPage() {
                 </Typography>
               </Box>
               <Box sx={{ ml: 2, flexShrink: 0 }}>
-                <img
+                <Image
                   src={rule.sticker}
                   alt={`Airona sticker ${rule.id}`}
+                  width={60}
+                  height={60}
                   style={{
-                    width: "60px",
-                    height: "60px",
                     borderRadius: "8px",
                     border: `2px solid ${rule.color}`,
                   }}
@@ -190,12 +191,12 @@ export default function CultRulesPage() {
           border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
         }}
       >
-        <img
+        <Image
           src="/airona/airona2.png"
           alt="Airona blessing"
+          width={80}
+          height={80}
           style={{
-            width: "80px",
-            height: "80px",
             marginBottom: "16px",
             borderRadius: "50%",
           }}

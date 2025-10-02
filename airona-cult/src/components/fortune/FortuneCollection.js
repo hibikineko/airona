@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Box, 
   Container, 
@@ -47,16 +47,7 @@ const FortuneCollection = () => {
   });
 
   // Fetch collection data
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchCollection();
-    } else if (status === 'unauthenticated') {
-      // Stop loading for unauthenticated users
-      setCollectionState(prev => ({ ...prev, loading: false }));
-    }
-  }, [status, collectionState.page]);
-
-  const fetchCollection = async () => {
+  const fetchCollection = useCallback(async () => {
     try {
       const params = new URLSearchParams({
         page: collectionState.page.toString(),
@@ -82,7 +73,16 @@ const FortuneCollection = () => {
         loading: false
       }));
     }
-  };
+  }, [collectionState.page]);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchCollection();
+    } else if (status === 'unauthenticated') {
+      // Stop loading for unauthenticated users
+      setCollectionState(prev => ({ ...prev, loading: false }));
+    }
+  }, [status, fetchCollection]);
 
   // Filter and sort cards
   const filteredCards = collectionState.userCards.filter(userCard => {
@@ -230,7 +230,7 @@ const FortuneCollection = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
           <Button
             variant="outlined"
-            onClick={() => router.push('/game/fortune')}
+            onClick={() => router.push('/game/fortune/draw')}
             sx={{
               borderColor: 'rgba(175, 82, 222, 0.5)',
               color: '#af52de',

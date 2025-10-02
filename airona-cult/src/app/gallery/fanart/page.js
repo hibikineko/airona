@@ -22,20 +22,17 @@ export default function FanartGallery() {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const [openImage, setOpenImage] = useState(null);
 
   const PAGE_SIZE = 8; // load in multiples of 4 so the grid fills nicely
 
   const loadMore = async (pageIndex) => {
-    if (loading || !hasMore) return;
+    if (loading) return;
     setLoading(true);
 
     try {
       const newItems = await fetchFanart(pageIndex, PAGE_SIZE);
-      if (!newItems || newItems.length === 0) {
-        setHasMore(false);
-      } else {
+      if (newItems && newItems.length > 0) {
         setItems((prev) => [...prev, ...newItems]);
         setPage(pageIndex + 1);
       }
@@ -76,41 +73,39 @@ export default function FanartGallery() {
                 boxShadow: 3,
                 transition: "transform 0.3s, box-shadow 0.3s",
                 "&:hover": { transform: "scale(1.03)", boxShadow: 6 },
+                position: "relative",
               }}
             >
               <CardActionArea onClick={() => setOpenImage(img.image_url)}>
-                <Box sx={{ position: "relative", width: "100%", height: 220 }}>
-                  <img
-                    src={img.image_url}
-                    alt={img.title || "Fanart"}
-                    style={{
+                <img
+                  src={img.image_url}
+                  alt={img.title || "Fanart"}
+                  style={{
+                    width: "100%",
+                    height: "220px",
+                    objectFit: "cover",
+                  }}
+                />
+                {img.title && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      bottom: img.source ? "40px" : "0px",
                       width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
+                      bgcolor: "rgba(0,0,0,0.6)",
+                      color: "#fff",
+                      p: 0.5,
+                      textAlign: "center",
                     }}
-                  />
-                  {img.title && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        bottom: 0,
-                        width: "100%",
-                        bgcolor: "rgba(0,0,0,0.4)",
-                        color: "#fff",
-                        p: 0.5,
-                        textAlign: "center",
-                      }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 500, fontSize: "0.85rem" }}
                     >
-                      <Typography
-                        variant="subtitle2"
-                        sx={{ fontWeight: 500, fontSize: "0.85rem" }}
-                      >
-                        {img.title}
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
+                      {img.title}
+                    </Typography>
+                  </Box>
+                )}
               </CardActionArea>
               {img.source && (
                 <CardContent sx={{ textAlign: "center", pt: 1 }}>
@@ -131,19 +126,13 @@ export default function FanartGallery() {
       </Grid>
 
       <Box textAlign="center" mt={4}>
-        {hasMore ? (
-          <Button
-            variant="contained"
-            onClick={() => loadMore(page)}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Load More"}
-          </Button>
-        ) : (
-          <Typography variant="subtitle1" color="text.secondary">
-            No more fanart to show.
-          </Typography>
-        )}
+        <Button
+          variant="contained"
+          onClick={() => loadMore(page)}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Load More"}
+        </Button>
       </Box>
 
       {/* Lightbox */}
@@ -160,10 +149,11 @@ export default function FanartGallery() {
               src={openImage}
               alt="Large view"
               style={{
-                maxWidth: "100%",
+                maxWidth: "100vw",
+                maxHeight: "100vh",
+                width: "auto",
                 height: "auto",
-                display: "block",
-                margin: "0 auto",
+                objectFit: "contain",
               }}
             />
           )}

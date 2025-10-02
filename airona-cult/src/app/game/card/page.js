@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import {
   Box,
@@ -46,11 +46,11 @@ export default function AironaMemory() {
   const [scatterCountdown, setScatterCountdown] = useState(5);
   const [positions, setPositions] = useState([]);
 
-  const difficulties = {
+  const difficulties = useMemo(() => ({
     easy: { time: 120, moves: 40 },
     hard: { time: 60, moves: 25 },
     nightmare: { time: 60, moves: 25 },
-  };
+  }), []);
 
   const startGame = (mode) => {
     const shuffled = shuffle([...stickers, ...stickers]);
@@ -108,9 +108,9 @@ export default function AironaMemory() {
       scatterCards();
       setScatterCountdown(5);
     }
-  }, [scatterCountdown, difficulty]);
+  }, [scatterCountdown, difficulty, scatterCards]);
 
-  const scatterCards = () => {
+  const scatterCards = useCallback(() => {
     setCards((prev) => {
       const unmatchedIndexes = prev
         .map((c, i) => (matched.includes(i) ? null : i))
@@ -141,7 +141,7 @@ export default function AironaMemory() {
 
       return newCards;
     });
-  };
+  }, [matched]);
 
   const handleFlip = (index) => {
     if (gameOver || previewing) return;

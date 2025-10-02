@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -24,33 +24,30 @@ export default function ScreenshotGallery() {
 
   const PAGE_SIZE = 8; // load more per page so it fills 4x2 grid faster
 
-  const loadMore = useCallback(
-    async (pageIndex) => {
-      setLoading(true);
+  const loadMore = async (pageIndex) => {
+    setLoading(true);
 
-      try {
-        const newItems = await fetchScreenshots(pageIndex, PAGE_SIZE);
+    try {
+      const newItems = await fetchScreenshots(pageIndex, PAGE_SIZE);
 
-        if (newItems.length > 0) {
-          if (pageIndex === 0) {
-            setItems(newItems);
-          } else {
-            setItems((prev) => [...prev, ...newItems]);
-          }
-          setPage(pageIndex);
+      if (newItems.length > 0) {
+        if (pageIndex === 0) {
+          setItems(newItems);
+        } else {
+          setItems((prev) => [...prev, ...newItems]);
         }
-      } catch (err) {
-        console.error("Failed to fetch screenshots:", err);
-      } finally {
-        setLoading(false);
+        setPage(pageIndex);
       }
-    },
-    []
-  );
+    } catch (err) {
+      console.error("Failed to fetch screenshots:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadMore(0);
-  }, [loadMore]);
+  }, []);
 
   return (
     <Container maxWidth="xl" sx={{ py: 6 }}>
