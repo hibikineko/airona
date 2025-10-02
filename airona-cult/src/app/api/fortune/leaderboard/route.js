@@ -58,7 +58,7 @@ export async function GET() {
       // Get user stats
       const { data: userStats, error: statsError } = await supabaseServer
         .from('user_stats')
-        .select('total_draws, daily_streak, last_draw_date')
+        .select('total_draws, daily_streak, last_draw_date, total_coin_draws, standard_pity_counter, limited_pity_counter')
         .eq('discord_uid', user.discord_uid)
         .single();
 
@@ -79,8 +79,11 @@ export async function GET() {
           cards_collected: cardsCollected,
           completion_rate: parseFloat(completionRate),
           total_draws: userStats?.total_draws || 0,
+          total_coin_draws: userStats?.total_coin_draws || 0,
           daily_streak: userStats?.daily_streak || 0,
-          last_draw_date: userStats?.last_draw_date
+          last_draw_date: userStats?.last_draw_date,
+          standard_pity: userStats?.standard_pity_counter || 0,
+          limited_pity: userStats?.limited_pity_counter || 0
         });
       }
     }
