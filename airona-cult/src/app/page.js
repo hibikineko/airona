@@ -2,6 +2,7 @@ import Link from "next/link";
 import { fetchFanart, fetchScreenshots, fetchPosts } from "@/lib/fetchContentSecure";
 import ContentCarousel from "@/components/ContentCarousel";
 import ReviewCarousel from "@/components/ReviewCarousel";
+import FortuneAnnouncementPopup from "@/components/fortune/FortuneAnnouncementPopup";
 
 export default async function HomePage() {
   const [fanart, screenshots, posts] = await Promise.all([
@@ -11,7 +12,11 @@ export default async function HomePage() {
   ]);
 
   return (
-    <main style={{ padding: "2rem" }}>
+    <>
+      {/* Fortune Announcement Popup */}
+      <FortuneAnnouncementPopup />
+      
+      <main style={{ padding: "2rem" }}>
       {/* --- Keep your existing top hero/intro section --- */}
       <section style={{ marginBottom: "3rem" }}>
         <h1>Welcome to Airona Cult</h1>
@@ -51,5 +56,6 @@ export default async function HomePage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

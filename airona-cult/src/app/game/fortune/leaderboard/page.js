@@ -103,14 +103,62 @@ const FortuneLeaderboard = () => {
   if (status === 'loading' || leaderboardState.loading) {
     return (
       <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <Box sx={{ width: '100%', maxWidth: 600 }}>
-            <Skeleton variant="rectangular" height={200} sx={{ mb: 2, borderRadius: 2 }} />
-            {[...Array(5)].map((_, index) => (
-              <Skeleton key={index} variant="rectangular" height={80} sx={{ mb: 1, borderRadius: 1 }} />
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Skeleton variant="text" width="60%" height={60} sx={{ mx: 'auto' }} />
+          <Skeleton variant="text" width="40%" height={30} sx={{ mx: 'auto', mt: 1 }} />
+        </Box>
+        
+        {/* Header skeleton */}
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Skeleton variant="circular" width={60} height={60} />
+            <Box sx={{ flex: 1 }}>
+              <Skeleton variant="text" width="30%" height={40} />
+              <Skeleton variant="text" width="50%" height={20} />
+            </Box>
+          </Box>
+        </Paper>
+        
+        {/* Table skeleton */}
+        <Paper sx={{ mb: 3 }}>
+          <Box sx={{ p: 2 }}>
+            {/* Table header skeleton */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 2, px: 2 }}>
+              {['Rank', 'Player', 'Collection %', 'Cards', 'Streak', 'Free Draws', 'Coin Draws'].map((header, index) => (
+                <Skeleton key={index} variant="text" height={30} sx={{ flex: index === 1 ? 2 : 1 }} />
+              ))}
+            </Box>
+            
+            {/* Table rows skeleton */}
+            {[...Array(8)].map((_, index) => (
+              <Box key={index} sx={{ display: 'flex', gap: 2, mb: 1, px: 2, alignItems: 'center' }}>
+                <Skeleton variant="text" width={60} height={50} />
+                <Box sx={{ flex: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Skeleton variant="circular" width={40} height={40} />
+                  <Skeleton variant="text" width="60%" height={30} />
+                </Box>
+                <Skeleton variant="text" width={80} height={40} sx={{ flex: 1 }} />
+                <Skeleton variant="text" width={60} height={30} sx={{ flex: 1 }} />
+                <Skeleton variant="text" width={60} height={30} sx={{ flex: 1 }} />
+                <Skeleton variant="text" width={60} height={30} sx={{ flex: 1 }} />
+                <Skeleton variant="text" width={60} height={30} sx={{ flex: 1 }} />
+              </Box>
             ))}
           </Box>
-        </Box>
+        </Paper>
+        
+        {/* Stats skeleton */}
+        <Grid container spacing={3}>
+          {[...Array(5)].map((_, index) => (
+            <Grid item xs={6} md={2.4} key={index}>
+              <Paper sx={{ p: 2, textAlign: 'center' }}>
+                <Skeleton variant="circular" width={40} height={40} sx={{ mx: 'auto', mb: 1 }} />
+                <Skeleton variant="text" width="60%" height={30} sx={{ mx: 'auto' }} />
+                <Skeleton variant="text" width="80%" height={20} sx={{ mx: 'auto' }} />
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     );
   }
@@ -311,7 +359,10 @@ const FortuneLeaderboard = () => {
                   Streak
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
-                  Draws
+                  Free Draws
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                  Coin Draws
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -404,6 +455,20 @@ const FortuneLeaderboard = () => {
                       {player.total_draws}
                     </Typography>
                   </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                      <Image 
+                        src="/airona/airona_coin.png" 
+                        alt="Airona Coin" 
+                        width={16} 
+                        height={16} 
+                        style={{ opacity: 0.8 }}
+                      />
+                      <Typography sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                        {player.total_coin_draws || 0}
+                      </Typography>
+                    </Box>
+                  </TableCell>
                 </motion.tr>
               ))}
             </TableBody>
@@ -418,7 +483,7 @@ const FortuneLeaderboard = () => {
         transition={{ duration: 0.5, delay: 0.4 }}
       >
         <Grid container spacing={{ xs: 2, sm: 3 }}>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={6} md={2.4}>
             <Card sx={{ textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1))' }}>
               <CardContent sx={{ py: { xs: 1.5, sm: 2 } }}>
                 <EmojiEvents sx={{ fontSize: { xs: 32, sm: 40 }, color: '#FFD700', mb: 1 }} />
@@ -431,7 +496,7 @@ const FortuneLeaderboard = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={6} md={2.4}>
             <Card sx={{ textAlign: 'center', background: 'linear-gradient(135deg, rgba(175,82,222,0.1), rgba(255,149,0,0.1))' }}>
               <CardContent sx={{ py: { xs: 1.5, sm: 2 } }}>
                 <Collections sx={{ fontSize: { xs: 32, sm: 40 }, color: '#af52de', mb: 1 }} />
@@ -444,7 +509,7 @@ const FortuneLeaderboard = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={6} md={2.4}>
             <Card sx={{ textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,149,0,0.1), rgba(255,69,0,0.1))' }}>
               <CardContent sx={{ py: { xs: 1.5, sm: 2 } }}>
                 <LocalFireDepartment sx={{ fontSize: { xs: 32, sm: 40 }, color: '#ff9500', mb: 1 }} />
@@ -457,7 +522,7 @@ const FortuneLeaderboard = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={6} md={2.4}>
             <Card sx={{ textAlign: 'center', background: 'linear-gradient(135deg, rgba(0,212,255,0.1), rgba(33,203,243,0.1))' }}>
               <CardContent sx={{ py: { xs: 1.5, sm: 2 } }}>
                 <TrendingUp sx={{ fontSize: { xs: 32, sm: 40 }, color: '#00d4ff', mb: 1 }} />
@@ -465,7 +530,27 @@ const FortuneLeaderboard = () => {
                   {leaderboardState.rankings.length > 0 ? leaderboardState.rankings.reduce((sum, p) => sum + p.total_draws, 0) : 0}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                  Total Draws
+                  Total Free Draws
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} md={2.4}>
+            <Card sx={{ textAlign: 'center', background: 'linear-gradient(135deg, rgba(175,82,222,0.1), rgba(33,203,243,0.1))' }}>
+              <CardContent sx={{ py: { xs: 1.5, sm: 2 } }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                  <Image 
+                    src="/airona/airona_coin.png" 
+                    alt="Airona Coin" 
+                    width={40} 
+                    height={40} 
+                  />
+                </Box>
+                <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                  {leaderboardState.rankings.length > 0 ? leaderboardState.rankings.reduce((sum, p) => sum + (p.total_coin_draws || 0), 0) : 0}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                  Total Coin Draws
                 </Typography>
               </CardContent>
             </Card>

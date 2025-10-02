@@ -59,6 +59,17 @@ export async function GET(request) {
       );
     }
 
+    // Fix image paths for user cards
+    const processedUserCards = userCards.map(userCard => ({
+      ...userCard,
+      cards: {
+        ...userCard.cards,
+        airona_sticker_path: userCard.cards.airona_sticker_path.startsWith('/') 
+          ? userCard.cards.airona_sticker_path 
+          : `/airona/${userCard.cards.airona_sticker_path}`
+      }
+    }));
+
     // Get all available cards for completion tracking
     const { data: allCards } = await supabaseServer
       .from("cards")
@@ -68,23 +79,23 @@ export async function GET(request) {
       .order("name", { ascending: true });
 
     // Calculate collection stats
-    const collectedCardIds = new Set(userCards.map(uc => uc.cards.id));
+    const collectedCardIds = new Set(processedUserCards.map(uc => uc.cards.id));
     const totalCards = allCards?.length || 0;
     const collectedCount = collectedCardIds.size;
     const completionRate = totalCards > 0 ? (collectedCount / totalCards * 100).toFixed(1) : 0;
 
     return NextResponse.json({
-      userCards,
+      userCards: processedUserCards,
       stats: {
         total_collected: collectedCount,
         total_available: totalCards,
         completion_rate: completionRate,
-        daily_draws: userCards.filter(uc => uc.is_daily_draw).length
+        daily_draws: processedUserCards.filter(uc => uc.is_daily_draw).length
       },
       pagination: {
         page,
         pageSize,
-        hasMore: userCards.length === pageSize
+        hasMore: processedUserCards.length === pageSize
       }
     });
 

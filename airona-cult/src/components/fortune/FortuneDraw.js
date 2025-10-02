@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Container,
   Box,
@@ -21,6 +21,9 @@ import { useRouter } from 'next/navigation';
 import { FaDiscord } from 'react-icons/fa';
 import Image from 'next/image';
 import FortuneCard from '@/components/fortune/FortuneCard';
+import BannerSelector from '@/components/fortune/BannerSelector';
+import CoinBalance from '@/components/fortune/CoinBalance';
+import PityCounter from '@/components/fortune/PityCounter';
 
 const FortuneDraw = () => {
   const { data: session, status } = useSession();
@@ -44,6 +47,17 @@ const FortuneDraw = () => {
     seconds: 0,
     isActive: false
   });
+
+  // Enhanced state for new features
+  const [selectedBanner, setSelectedBanner] = useState('standard');
+  const [coinBalance, setCoinBalance] = useState(0);
+  const [drawType, setDrawType] = useState('free'); // 'free' or 'coin'
+  
+  // Ref for CoinBalance component
+  const coinBalanceRef = useRef();
+  
+  // Ref for PityCounter component  
+  const pityCounterRef = useRef();
 
   // Fetch user stats and game state
   const fetchGameState = useCallback(async () => {
@@ -154,12 +168,19 @@ const FortuneDraw = () => {
     }
   };
 
-  const handleDraw = async () => {
+  const handleDraw = async (useCoin = false) => {
     setGameState(prev => ({ ...prev, isDrawing: true, error: null }));
     
     try {
       const response = await fetch('/api/fortune/draw', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          banner_type: selectedBanner,
+          use_coin: useCoin
+        })
       });
       
       if (!response.ok) {
@@ -172,11 +193,28 @@ const FortuneDraw = () => {
       setGameState(prev => ({
         ...prev,
         drawnCard: data.card,
-        canDraw: false,
+        canDraw: data.canDraw || false,
         isDrawing: false,
         stats: data.updatedStats || prev.stats,
         showingTodaysCard: false
       }));
+
+      // Update coin balance if it was a coin draw
+      if (useCoin && data.newBalance !== undefined) {
+        setCoinBalance(data.newBalance);
+      }
+      
+      // Always refresh both components to show real-time updates
+      // Use setTimeout to ensure the server has processed the transaction
+      setTimeout(() => {
+        if (coinBalanceRef.current) {
+          coinBalanceRef.current.refresh();
+        }
+        
+        if (pityCounterRef.current) {
+          pityCounterRef.current.refresh();
+        }
+      }, 100); // Small delay to ensure server processing is complete
       
     } catch (error) {
       setGameState(prev => ({
@@ -188,6 +226,15 @@ const FortuneDraw = () => {
   };
 
   const resetCard = () => {
+    setGameState(prev => ({
+      ...prev,
+      drawnCard: null,
+      showingTodaysCard: false,
+      error: null
+    }));
+  };
+
+  const goToCollection = () => {
     router.push('/game/fortune/collection');
   };
 
@@ -564,6 +611,37 @@ const FortuneDraw = () => {
         </Alert>
       )}
 
+      {/* Enhanced Fortune Card System UI */}
+      {session?.user?.id && (
+        <>
+          {/* Coin Balance Display */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <CoinBalance 
+              ref={coinBalanceRef}
+              onBalanceUpdate={setCoinBalance}
+              size="large"
+              showHistory={true}
+            />
+          </Box>
+
+          {/* Banner Selection */}
+          <BannerSelector
+            selectedBanner={selectedBanner}
+            onBannerChange={setSelectedBanner}
+            disabled={gameState.isDrawing}
+          />
+
+          {/* Pity Counter */}
+          <PityCounter
+            ref={pityCounterRef}
+            bannerType={selectedBanner}
+            onUpdate={(current, remaining) => {
+              // Could add additional pity logic here if needed
+            }}
+          />
+        </>
+      )}
+
       {/* Main Game Area */}
       <Box sx={{ 
         display: 'flex', 
@@ -635,28 +713,108 @@ const FortuneDraw = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={handleDraw}
-                    disabled={gameState.isDrawing}
-                    startIcon={gameState.isDrawing ? <Schedule /> : <AutoAwesome />}
-                    sx={{
-                      py: { xs: 1.5, sm: 2 },
-                      px: { xs: 3, sm: 4 },
-                      fontSize: { xs: '1rem', sm: '1.2rem' },
-                      background: 'linear-gradient(45deg, #af52de 30%, #ff9500 90%)',
-                      boxShadow: '0 4px 20px rgba(175, 82, 222, 0.4)',
-                      width: { xs: '100%', sm: 'auto' },
-                      maxWidth: { xs: '300px', sm: 'none' },
-                      '&:hover': {
-                        boxShadow: '0 6px 25px rgba(175, 82, 222, 0.6)',
-                        background: 'linear-gradient(45deg, #9c47cc 30%, #e6890e 90%)',
+                  {/* Draw Buttons - Free and Coin Options */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: 2,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    {/* Free Daily Draw Button */}
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={() => handleDraw(false)}
+                      disabled={gameState.isDrawing || !gameState.canDraw}
+                      startIcon={gameState.isDrawing ? <Schedule /> : <AutoAwesome />}
+                      sx={{
+                        py: { xs: 1.5, sm: 2 },
+                        px: { xs: 3, sm: 4 },
+                        fontSize: { xs: '1rem', sm: '1.2rem' },
+                        background: 'linear-gradient(45deg, #af52de 30%, #ff9500 90%)',
+                        boxShadow: '0 4px 20px rgba(175, 82, 222, 0.4)',
+                        width: { xs: '100%', sm: 'auto' },
+                        minWidth: 200,
+                        '&:hover': {
+                          boxShadow: '0 6px 25px rgba(175, 82, 222, 0.6)',
+                          background: 'linear-gradient(45deg, #9c47cc 30%, #e6890e 90%)',
+                        },
+                        '&:disabled': {
+                          background: 'rgba(0, 0, 0, 0.12)',
+                          color: 'rgba(0, 0, 0, 0.26)'
+                        }
+                      }}
+                    >
+                      {gameState.isDrawing ? 'Drawing...' : 
+                       gameState.canDraw ? 'Free Daily Draw' : 'Used Today'}
+                    </Button>
+
+                    {/* Coin Draw Button */}
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={() => handleDraw(true)}
+                      disabled={gameState.isDrawing || coinBalance < 1}
+                      startIcon={
+                        <Image
+                          src="/airona/airona_coin.png"
+                          alt="Airona Coin"
+                          width={20}
+                          height={20}
+                          style={{ objectFit: 'contain' }}
+                        />
                       }
-                    }}
-                  >
-                    {gameState.isDrawing ? 'Channeling blessing...' : 'Receive Divine Blessing'}
-                  </Button>
+                      sx={{
+                        py: { xs: 1.5, sm: 2 },
+                        px: { xs: 3, sm: 4 },
+                        fontSize: { xs: '1rem', sm: '1.2rem' },
+                        borderColor: '#FFD700',
+                        color: '#FFD700',
+                        width: { xs: '100%', sm: 'auto' },
+                        minWidth: 200,
+                        '&:hover': {
+                          borderColor: '#FFA500',
+                          backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                          color: '#FFA500'
+                        },
+                        '&:disabled': {
+                          borderColor: 'rgba(0, 0, 0, 0.12)',
+                          color: 'rgba(0, 0, 0, 0.26)'
+                        }
+                      }}
+                    >
+                      Draw with 1 Coin
+                    </Button>
+                  </Box>
+
+                  {/* Helper Text */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 2, gap: 1 }}>
+                    {coinBalance >= 1 && (
+                      <Image
+                        src="/airona/airona_coin.png"
+                        alt="Airona Coin"
+                        width={16}
+                        height={16}
+                        style={{ objectFit: 'contain' }}
+                      />
+                    )}
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary" 
+                      sx={{ 
+                        textAlign: 'center',
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                      }}
+                    >
+                      {coinBalance < 1 && !gameState.canDraw ? 
+                        'No coins available. Come back tomorrow for free draw!' :
+                        coinBalance < 1 ? 
+                          'Use your free draw or earn coins by dismantling duplicate cards' :
+                          `You have ${coinBalance} coin${coinBalance !== 1 ? 's' : ''} available`
+                      }
+                    </Typography>
+                  </Box>
                 </motion.div>
               </motion.div>
             ) : (
@@ -707,12 +865,12 @@ const FortuneDraw = () => {
                   >
                     {gameState.isOwner ? 
                       '"You have divine powers! Draw as many blessings as you wish for testing!"' :
-                      '"I\'m gathering cosmic energy for your next blessing..."'
+                      '"I\'m gathering cosmic energy for your next daily blessing... But you can still use coins!"'
                     }
                   </Typography>
                   
                   <Chip 
-                    label={gameState.isOwner ? "🧪 Testing Enabled" : "⏳ Resets at Midnight UTC"}
+                    label={gameState.isOwner ? "🧪 Testing Enabled" : "⏳ Daily Resets at Midnight UTC"}
                     color={gameState.isOwner ? "success" : "warning"}
                     sx={{ 
                       fontWeight: 'bold',
@@ -722,6 +880,74 @@ const FortuneDraw = () => {
                       mb: 2
                     }}
                   />
+
+                  {/* Coin Draw Option for Daily Exhausted Users */}
+                  {!gameState.isOwner && (
+                    <Box sx={{ mt: 2, mb: 2 }}>
+                      <Button
+                        variant="outlined"
+                        size="large"
+                        onClick={() => handleDraw(true)}
+                        disabled={gameState.isDrawing || coinBalance < 1}
+                        startIcon={
+                          <Image
+                            src="/airona/airona_coin.png"
+                            alt="Airona Coin"
+                            width={20}
+                            height={20}
+                            style={{ objectFit: 'contain' }}
+                          />
+                        }
+                        sx={{
+                          py: { xs: 1.5, sm: 2 },
+                          px: { xs: 3, sm: 4 },
+                          fontSize: { xs: '1rem', sm: '1.2rem' },
+                          borderColor: '#FFD700',
+                          color: '#000',
+                          backgroundColor: '#FFD700',
+                          width: { xs: '100%', sm: 'auto' },
+                          minWidth: 200,
+                          mb: 1,
+                          '&:hover': {
+                            borderColor: '#FFA500',
+                            backgroundColor: '#FFA500',
+                            color: '#000'
+                          },
+                          '&:disabled': {
+                            borderColor: 'rgba(0, 0, 0, 0.12)',
+                            backgroundColor: 'rgba(0, 0, 0, 0.12)',
+                            color: 'rgba(0, 0, 0, 0.26)'
+                          }
+                        }}
+                      >
+                        {gameState.isDrawing ? 'Drawing...' : 'Draw with 1 Coin'}
+                      </Button>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mt: 1 }}>
+                        {coinBalance >= 1 && (
+                          <Image
+                            src="/airona/airona_coin.png"
+                            alt="Airona Coin"
+                            width={14}
+                            height={14}
+                            style={{ objectFit: 'contain' }}
+                          />
+                        )}
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary" 
+                          sx={{ 
+                            textAlign: 'center',
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                          }}
+                        >
+                          {coinBalance < 1 ? 
+                            'No coins available. Dismantle duplicate cards to earn coins!' :
+                            `You have ${coinBalance} coin${coinBalance !== 1 ? 's' : ''} available for more draws`
+                          }
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
                   
                   {/* Navigation buttons for when blessing is recharging */}
                   <Box sx={{ 
@@ -912,42 +1138,179 @@ const FortuneDraw = () => {
             style={{ 
               marginTop: isMobile ? 16 : 24,
               display: 'flex',
-              justifyContent: 'center',
+              flexDirection: 'column',
+              alignItems: 'center',
               width: '100%',
               gap: isMobile ? 12 : 16
             }}
           >
-            <Button
-              variant="outlined"
-              onClick={resetCard}
-              sx={{
-                borderColor: 'rgba(175, 82, 222, 0.5)',
-                color: '#af52de',
-                fontSize: { xs: '0.9rem', sm: '1rem' },
-                px: { xs: 2, sm: 3 },
-                '&:hover': {
-                  borderColor: '#af52de',
-                  backgroundColor: 'rgba(175, 82, 222, 0.1)'
+            {/* Draw Again Options */}
+            <Paper sx={{ 
+              p: 3, 
+              textAlign: 'center',
+              background: 'linear-gradient(135deg, rgba(175, 82, 222, 0.1), rgba(255, 149, 0, 0.1))',
+              border: '1px solid rgba(175, 82, 222, 0.2)',
+              maxWidth: 600,
+              width: '100%'
+            }}>
+              <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+                🎲 Draw Another Card?
+              </Typography>
+              
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 2,
+                justifyContent: 'center',
+                alignItems: 'center',
+                mb: 2
+              }}>
+                {/* Free Daily Draw Button */}
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => handleDraw(false)}
+                  disabled={gameState.isDrawing || !gameState.canDraw}
+                  startIcon={gameState.isDrawing ? <Schedule /> : <AutoAwesome />}
+                  sx={{
+                    py: { xs: 1.5, sm: 2 },
+                    px: { xs: 3, sm: 4 },
+                    fontSize: { xs: '1rem', sm: '1.2rem' },
+                    background: gameState.canDraw 
+                      ? 'linear-gradient(45deg, #af52de 30%, #ff9500 90%)'
+                      : 'rgba(0, 0, 0, 0.12)',
+                    boxShadow: gameState.canDraw ? '0 4px 20px rgba(175, 82, 222, 0.4)' : 'none',
+                    width: { xs: '100%', sm: 'auto' },
+                    minWidth: 200,
+                    '&:hover': gameState.canDraw ? {
+                      boxShadow: '0 6px 25px rgba(175, 82, 222, 0.6)',
+                      background: 'linear-gradient(45deg, #9c47cc 30%, #e6890e 90%)',
+                    } : {},
+                    '&:disabled': {
+                      background: 'rgba(0, 0, 0, 0.12)',
+                      color: 'rgba(0, 0, 0, 0.26)'
+                    }
+                  }}
+                >
+                  {gameState.isDrawing ? 'Drawing...' : 
+                   gameState.canDraw ? 'Free Daily Draw' : '🌙 Blessing Recharging'}
+                </Button>
+
+                {/* Coin Draw Button */}
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => handleDraw(true)}
+                  disabled={gameState.isDrawing || coinBalance < 1}
+                  startIcon={
+                    <Image
+                      src="/airona/airona_coin.png"
+                      alt="Airona Coin"
+                      width={20}
+                      height={20}
+                      style={{ objectFit: 'contain' }}
+                    />
+                  }
+                  sx={{
+                    py: { xs: 1.5, sm: 2 },
+                    px: { xs: 3, sm: 4 },
+                    fontSize: { xs: '1rem', sm: '1.2rem' },
+                    borderColor: '#FFD700',
+                    color: '#000',
+                    backgroundColor: '#FFD700',
+                    width: { xs: '100%', sm: 'auto' },
+                    minWidth: 200,
+                    '&:hover': {
+                      borderColor: '#FFA500',
+                      backgroundColor: '#FFA500',
+                      color: '#000'
+                    },
+                    '&:disabled': {
+                      borderColor: 'rgba(0, 0, 0, 0.12)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.12)',
+                      color: 'rgba(0, 0, 0, 0.26)'
+                    }
+                  }}
+                >
+                  Draw with 1 Coin
+                </Button>
+              </Box>
+
+              {/* Helper Text */}
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ 
+                  textAlign: 'center',
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                }}
+              >
+                {!gameState.canDraw && coinBalance < 1 ? 
+                  'Daily blessing used. Get coins by dismantling duplicate cards!' :
+                  !gameState.canDraw ? 
+                    `Daily blessing used. You have ${coinBalance} coin${coinBalance !== 1 ? 's' : ''} available` :
+                  coinBalance < 1 ? 
+                    'Use your free draw or earn coins for more draws' :
+                    `Free draw available or use ${coinBalance} coin${coinBalance !== 1 ? 's' : ''}`
                 }
-              }}
-            >
-              ✨ View Collection
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => router.push('/game/fortune/leaderboard')}
-              sx={{
-                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-                color: '#000',
-                fontSize: { xs: '0.9rem', sm: '1rem' },
-                px: { xs: 2, sm: 3 },
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #FFA500, #FF8C00)',
-                }
-              }}
-            >
-              🏆 Leaderboard
-            </Button>
+              </Typography>
+            </Paper>
+
+            {/* Navigation buttons */}
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 2, 
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              <Button
+                variant="outlined"
+                onClick={goToCollection}
+                sx={{
+                  borderColor: 'rgba(175, 82, 222, 0.5)',
+                  color: '#af52de',
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                  px: { xs: 2, sm: 3 },
+                  '&:hover': {
+                    borderColor: '#af52de',
+                    backgroundColor: 'rgba(175, 82, 222, 0.1)'
+                  }
+                }}
+              >
+                ✨ View Collection
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={resetCard}
+                sx={{
+                  borderColor: 'rgba(33, 150, 243, 0.5)',
+                  color: '#2196f3',
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                  px: { xs: 2, sm: 3 },
+                  '&:hover': {
+                    borderColor: '#2196f3',
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)'
+                  }
+                }}
+              >
+                🎲 Draw Again
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => router.push('/game/fortune/leaderboard')}
+                sx={{
+                  background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                  color: '#000',
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                  px: { xs: 2, sm: 3 },
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #FFA500, #FF8C00)',
+                  }
+                }}
+              >
+                🏆 Leaderboard
+              </Button>
+            </Box>
           </motion.div>
         )}
       </Box>

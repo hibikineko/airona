@@ -17,13 +17,33 @@ import {
   MenuItem,
   Pagination,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Tooltip,
+  Snackbar,
+  CircularProgress
 } from '@mui/material';
-import { Search, FilterList, Star, EmojiEvents } from '@mui/icons-material';
+import { 
+  Search, 
+  FilterList, 
+  Star, 
+  EmojiEvents, 
+  Delete, 
+  SelectAll, 
+  DeselectOutlined,
+  MonetizationOn,
+  Close
+} from '@mui/icons-material';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { FaDiscord } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import FortuneCard from '@/components/fortune/FortuneCard';
 
 const FortuneCollection = () => {
@@ -45,6 +65,13 @@ const FortuneCollection = () => {
     rarity: 'all',
     sortBy: 'newest'
   });
+
+  // Dismantling state
+  const [dismantleMode, setDismantleMode] = useState(false);
+  const [selectedCards, setSelectedCards] = useState(new Set());
+  const [dismantleDialog, setDismantleDialog] = useState(false);
+  const [dismantling, setDismantling] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   // Fetch collection data
   const fetchCollection = useCallback(async () => {
@@ -109,6 +136,121 @@ const FortuneCollection = () => {
 
   const handlePageChange = (event, newPage) => {
     setCollectionState(prev => ({ ...prev, page: newPage - 1 }));
+  };
+
+  // Dismantling functions
+  const toggleDismantleMode = () => {
+    setDismantleMode(!dismantleMode);
+    setSelectedCards(new Set());
+  };
+
+  const toggleCardSelection = (cardId) => {
+    const newSelected = new Set(selectedCards);
+    if (newSelected.has(cardId)) {
+      newSelected.delete(cardId);
+    } else {
+      newSelected.add(cardId);
+    }
+    setSelectedCards(newSelected);
+  };
+
+  const selectAllCards = () => {
+    const allSelectableCards = filteredCards
+      .filter(userCard => userCard.quantity && userCard.quantity > 1)
+      .map(userCard => userCard.cards.id);
+    setSelectedCards(new Set(allSelectableCards));
+  };
+
+  const deselectAllCards = () => {
+    setSelectedCards(new Set());
+  };
+
+  const handleDismantle = async () => {
+    if (selectedCards.size === 0) return;
+
+    setDismantling(true);
+    try {
+      const response = await fetch('/api/fortune/dismantle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cardIds: Array.from(selectedCards)
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to dismantle cards');
+      }
+
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: data.message,
+        severity: 'success'
+      });
+
+      // Reset selection and refresh collection
+      setSelectedCards(new Set());
+      setDismantleDialog(false);
+      setDismantleMode(false);
+      await fetchCollection();
+
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error.message,
+        severity: 'error'
+      });
+    } finally {
+      setDismantling(false);
+    }
+  };
+
+  const calculateDismantleRewards = () => {
+    let totalCoins = 0;
+    const details = [];
+
+    selectedCards.forEach(cardId => {
+      const userCard = filteredCards.find(uc => uc.cards.id === cardId);
+      if (!userCard || !userCard.quantity || userCard.quantity <= 1) return;
+
+      let coinsPerCard, requiredCards;
+      switch (userCard.cards.rarity) {
+        case 'elite':
+          coinsPerCard = 1;
+          requiredCards = 3;
+          break;
+        case 'super_rare':
+          coinsPerCard = 2;
+          requiredCards = 4;
+          break;
+        case 'ultra_rare':
+          coinsPerCard = 1;
+          requiredCards = 5;
+          break;
+        default:
+          return;
+      }
+
+      const availableForDismantling = userCard.quantity - 1;
+      const setsToDismantle = Math.floor(availableForDismantling / requiredCards);
+      if (setsToDismantle > 0) {
+        const coins = setsToDismantle * coinsPerCard;
+        totalCoins += coins;
+        details.push({
+          name: userCard.cards.name,
+          rarity: userCard.cards.rarity,
+          sets: setsToDismantle,
+          coins: coins
+        });
+      }
+    });
+
+    return { totalCoins, details };
   };
 
   if (status === 'loading' || collectionState.loading) {
@@ -243,6 +385,22 @@ const FortuneCollection = () => {
             }}
           >
             🎲 Draw Cards
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => router.push('/game/fortune/archive')}
+            sx={{
+              borderColor: 'rgba(33, 150, 243, 0.5)',
+              color: '#2196f3',
+              fontSize: { xs: '0.8rem', sm: '0.9rem' },
+              px: { xs: 2, sm: 3 },
+              '&:hover': {
+                borderColor: '#2196f3',
+                backgroundColor: 'rgba(33, 150, 243, 0.1)'
+              }
+            }}
+          >
+            📚 Card Archive
           </Button>
           <Button
             variant="contained"
@@ -408,6 +566,67 @@ const FortuneCollection = () => {
         </Grid>
       </Paper>
 
+      {/* Dismantling Controls */}
+      {filteredCards.length > 0 && (
+        <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Button
+                variant={dismantleMode ? "contained" : "outlined"}
+                color={dismantleMode ? "secondary" : "primary"}
+                onClick={toggleDismantleMode}
+                startIcon={<Delete />}
+              >
+                {dismantleMode ? 'Exit Dismantle' : 'Dismantle Cards'}
+              </Button>
+              
+              {dismantleMode && (
+                <>
+                  <Button
+                    size="small"
+                    onClick={selectAllCards}
+                    startIcon={<SelectAll />}
+                    disabled={filteredCards.filter(uc => uc.quantity > 1).length === 0}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={deselectAllCards}
+                    startIcon={<DeselectOutlined />}
+                    disabled={selectedCards.size === 0}
+                  >
+                    Deselect All
+                  </Button>
+                </>
+              )}
+            </Box>
+            
+            {dismantleMode && selectedCards.size > 0 && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {selectedCards.size} card{selectedCards.size !== 1 ? 's' : ''} selected
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  onClick={() => setDismantleDialog(true)}
+                  startIcon={<MonetizationOn />}
+                >
+                  Dismantle Selected
+                </Button>
+              </Box>
+            )}
+          </Box>
+          
+          {dismantleMode && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              Select duplicate cards to dismantle them for Airona Coins. You need at least 4-6 copies to dismantle (1 copy will always be kept).
+            </Alert>
+          )}
+        </Paper>
+      )}
+
       {/* Error Display */}
       {collectionState.error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setCollectionState(prev => ({ ...prev, error: null }))}>
@@ -433,6 +652,44 @@ const FortuneCollection = () => {
                       size={isMobile ? "small" : "medium"}
                       showFullDetails={false}
                     />
+                    
+                    {/* Dismantling Checkbox */}
+                    {dismantleMode && (
+                      <Box sx={{
+                        position: 'absolute',
+                        top: { xs: 4, sm: 8 },
+                        left: { xs: 4, sm: 8 },
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        borderRadius: 1,
+                        p: 0.5
+                      }}>
+                        <Checkbox
+                          checked={selectedCards.has(userCard.cards.id)}
+                          onChange={() => toggleCardSelection(userCard.cards.id)}
+                          disabled={!userCard.quantity || userCard.quantity <= 1}
+                          size="small"
+                          sx={{ 
+                            color: 'white',
+                            '&.Mui-checked': { color: 'primary.main' }
+                          }}
+                        />
+                      </Box>
+                    )}
+                    
+                    {/* Quantity Display */}
+                    {userCard.quantity && userCard.quantity > 1 && (
+                      <Chip
+                        label={`x${userCard.quantity}`}
+                        size="small"
+                        color="secondary"
+                        sx={{
+                          position: 'absolute',
+                          bottom: { xs: 4, sm: 8 },
+                          left: { xs: 4, sm: 8 },
+                          fontWeight: 'bold'
+                        }}
+                      />
+                    )}
                     
                     {/* Draw Info */}
                     <Box sx={{ 
@@ -517,6 +774,84 @@ const FortuneCollection = () => {
           )}
         </Paper>
       )}
+
+      {/* Dismantling Confirmation Dialog */}
+      <Dialog
+        open={dismantleDialog}
+        onClose={() => !dismantling && setDismantleDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <MonetizationOn color="primary" />
+            Dismantle Cards
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Are you sure you want to dismantle {selectedCards.size} card{selectedCards.size !== 1 ? 's' : ''}?
+          </Typography>
+          
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1, 
+            p: 2, 
+            backgroundColor: 'primary.main',
+            color: 'primary.contrastText',
+            borderRadius: 1,
+            mb: 2
+          }}>
+            <Image 
+              src="/airona/airona_coin.png" 
+              alt="Airona Coin" 
+              width={24} 
+              height={24} 
+            />
+            <Typography variant="h6">
+              +{calculateDismantleRewards()} Airona Coins
+            </Typography>
+          </Box>
+          
+          <Typography variant="body2" color="text.secondary">
+            This action cannot be undone. Dismantled cards will be permanently removed from your collection.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setDismantleDialog(false)}
+            disabled={dismantling}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDismantle}
+            variant="contained"
+            color="primary"
+            disabled={dismantling || selectedCards.size === 0}
+            startIcon={dismantling ? <CircularProgress size={20} /> : <MonetizationOn />}
+          >
+            {dismantling ? 'Dismantling...' : 'Dismantle'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

@@ -259,7 +259,9 @@ const FortuneCard = ({
                   filter: `drop-shadow(0 4px 8px ${rarity.glow})`
                 }}>
                   <Image
-                    src={`/airona/${card.airona_sticker_path}`}
+                    src={card.airona_sticker_path?.startsWith('/') 
+                      ? card.airona_sticker_path 
+                      : `/airona/${card.airona_sticker_path}`}
                     alt={card.name}
                     fill
                     style={{ objectFit: 'contain' }}
