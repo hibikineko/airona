@@ -90,26 +90,7 @@ export default function AironaMemory() {
     return () => clearTimeout(t);
   }, [timeLeft, started, gameOver, previewing]);
 
-  // Scatter for nightmare
-  useEffect(() => {
-    if (difficulty !== "nightmare" || !started || gameOver || previewing || matched.length === cards.length)
-      return;
-
-    const interval = setInterval(() => {
-      setScatterCountdown((c) => c - 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [difficulty, started, gameOver, previewing, matched, cards]);
-
-  useEffect(() => {
-    if (difficulty !== "nightmare") return;
-    if (scatterCountdown <= 0) {
-      scatterCards();
-      setScatterCountdown(5);
-    }
-  }, [scatterCountdown, difficulty, scatterCards]);
-
+  // Define scatterCards function before it's used in useEffect
   const scatterCards = useCallback(() => {
     setCards((prev) => {
       const unmatchedIndexes = prev
@@ -142,6 +123,26 @@ export default function AironaMemory() {
       return newCards;
     });
   }, [matched]);
+
+  // Scatter for nightmare
+  useEffect(() => {
+    if (difficulty !== "nightmare" || !started || gameOver || previewing || matched.length === cards.length)
+      return;
+
+    const interval = setInterval(() => {
+      setScatterCountdown((c) => c - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [difficulty, started, gameOver, previewing, matched, cards]);
+
+  useEffect(() => {
+    if (difficulty !== "nightmare") return;
+    if (scatterCountdown <= 0) {
+      scatterCards();
+      setScatterCountdown(5);
+    }
+  }, [scatterCountdown, difficulty, scatterCards]);
 
   const handleFlip = (index) => {
     if (gameOver || previewing) return;
