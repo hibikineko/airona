@@ -2,8 +2,6 @@ import Link from "next/link";
 import { fetchFanart, fetchScreenshots, fetchPosts } from "@/lib/fetchContentSecure";
 import ContentCarousel from "@/components/ContentCarousel";
 import ReviewCarousel from "@/components/ReviewCarousel";
-import FortuneAnnouncementPopup from "@/components/fortune/FortuneAnnouncementPopup";
-
 export default async function HomePage() {
   const [fanart, screenshots, posts] = await Promise.all([
     fetchFanart(0,12),
@@ -13,8 +11,7 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Fortune Announcement Popup */}
-      <FortuneAnnouncementPopup />
+      
       
       <main style={{ padding: "2rem" }}>
       {/* --- Keep your existing top hero/intro section --- */}

@@ -25,6 +25,7 @@ import {
 } from "recharts";
 import { DateTime } from "luxon";
 import { useTheme } from "@mui/material/styles";
+import WordCloudComponent from "../../../components/WordCloud";
 
 const CLASS_ABBR = {
   "Marksman": "MM",
@@ -75,6 +76,8 @@ export default function GuildAnalyticsPage() {
         const res = await fetch("/api/approved");
         if (!res.ok) throw new Error("Failed to fetch");
         const result = await res.json();
+        console.log('Fetched data:', result);
+        
         setData(result || []);
       } catch (err) {
         console.error("Failed to load approved data:", err);
@@ -391,12 +394,20 @@ hourData.forEach(d => {
           {favData.length === 0 ? (
             <Typography variant="body2">No data</Typography>
           ) : (
-            favData.slice(0, 50).map((f, idx) => (
-              <Box key={idx} sx={{ display: "flex", justifyContent: "space-between", py: 0.5, borderBottom: idx < favData.length - 1 ? "1px solid #eee" : "none" }}>
-                <Typography variant="body2" sx={{ fontSize: isMobile ? 13 : 14, color: theme.palette.text.primary }}>{f.name}</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>{f.count}</Typography>
-              </Box>
-            ))
+            <Box sx={{ 
+              width: '100%',
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              minHeight: { xs: 280, sm: 350, md: 400 },
+              p: { xs: 1, sm: 2 }
+            }}>
+              <WordCloudComponent 
+                words={favData} 
+                width={isMobile ? window.innerWidth - 100 : 600} 
+                height={isMobile ? 280 : 400}
+              />
+            </Box>
           )}
         </CardContent>
       </Card>
