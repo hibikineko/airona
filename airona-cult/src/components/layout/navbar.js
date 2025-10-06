@@ -14,11 +14,13 @@ import CasinoIcon from '@mui/icons-material/Casino';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StyleIcon from '@mui/icons-material/Style';
 import CollectionsIcon from '@mui/icons-material/Collections';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
 
 const navOptions = [
     { label: 'Home', icon: <HomeIcon />, path: '/' },
     { label: 'Airona', icon: <PublicIcon />, path: '/airona' },
     { label: 'Guild', icon: <HomeIcon />, path: '/guild' },
+    { label: 'Guild Analytics', icon: <AnalyticsIcon />, path: '/guild/analytics' },
     { label: 'Airona Clicker', icon: <SportsEsportsIcon />, path: '/game/clicker' },
     { label: 'Airona Memory Flip', icon: <CasinoIcon />, path: '/game/card' },
     { label: 'Fortune Cards', icon: <StyleIcon />, path: '/game/fortune/draw' },
