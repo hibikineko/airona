@@ -21,7 +21,7 @@ const getAironaTheme = (mode) =>
               contrastText: "#FFFFFF",
             },
             background: {
-              default: "#F8F5FB", // Lighter background for better contrast
+              default: "#e3cdf8ff", // Lighter background for better contrast
               paper: "#FFFFFF", // Pure white paper for maximum readability
             },
             text: {

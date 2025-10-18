@@ -22,10 +22,11 @@ export default function UploadPage() {
   const [isMember, setIsMember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    type: "fanart", // fanart, posts, screenshot
+    type: "fanart", // fanart, posts, screenshot, sesbian
     title: "",
     text: "",
     source: "",
+    artist: "",
     image: null,
   });
 
@@ -66,7 +67,10 @@ export default function UploadPage() {
     formData.append("title", form.title);
 
     if (form.image) formData.append("image", form.image);
-    if (form.type === "fanart") formData.append("source", form.source);
+    if (form.type === "fanart") {
+      if (form.source) formData.append("source", form.source);
+      if (form.artist) formData.append("artist", form.artist);
+    }
     if (form.type === "posts") formData.append("text", form.text);
 
     const res = await fetch(`/api/${form.type}/add`, {
@@ -84,7 +88,7 @@ export default function UploadPage() {
     }
 
     alert("Upload successful!");
-    setForm({ type: "fanart", title: "", text: "", source: "", image: null });
+    setForm({ type: "fanart", title: "", text: "", source: "", artist: "", image: null });
 
     // redirect to home after short delay
     router.push("/");
@@ -119,6 +123,7 @@ export default function UploadPage() {
                 <MenuItem value="fanart">Fanart</MenuItem>
                 <MenuItem value="posts">Post</MenuItem>
                 <MenuItem value="screenshot">Screenshot</MenuItem>
+                <MenuItem value="sesbian">Sesbian</MenuItem>
               </TextField>
 
               <TextField
@@ -130,12 +135,20 @@ export default function UploadPage() {
               />
 
               {form.type === "fanart" && (
-                <TextField
-                  label="Source"
-                  name="source"
-                  value={form.source}
-                  onChange={handleChange}
-                />
+                <>
+                  <TextField
+                    label="Source"
+                    name="source"
+                    value={form.source}
+                    onChange={handleChange}
+                  />
+                  <TextField
+                    label="Artist"
+                    name="artist"
+                    value={form.artist}
+                    onChange={handleChange}
+                  />
+                </>
               )}
 
               {form.type === "posts" && (

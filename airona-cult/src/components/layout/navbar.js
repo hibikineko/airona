@@ -15,9 +15,11 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StyleIcon from '@mui/icons-material/Style';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
 const navOptions = [
     { label: 'Home', icon: <HomeIcon />, path: '/' },
+    { label: 'POP♡RONA', icon: <MusicNoteIcon />, path: '/poprona' },
     { label: 'Airona', icon: <PublicIcon />, path: '/airona' },
     { label: 'Guild', icon: <HomeIcon />, path: '/guild' },
     { label: 'Guild Analytics', icon: <AnalyticsIcon />, path: '/guild/analytics' },
@@ -30,6 +32,7 @@ const navOptions = [
     { label: 'Cultist Profiles', icon: <ForumIcon />, path: '/maintenance' },
     { label: 'Screenshot Gallery', icon: <PhotoLibraryIcon />, path: '/gallery/screenshot' },
     { label: 'fanart Gallery', icon: <PhotoLibraryIcon />, path: '/gallery/fanart' },
+    { label: 'Sesbian Gallery', icon: <PhotoLibraryIcon />, path: '/gallery/sesbian' },
     { label: 'Upload (members only)', icon: <PublicIcon />, path: '/upload' },
     { label: 'About Us', icon: <InfoIcon />, path: '/about' },
 ];
