@@ -85,6 +85,33 @@ export async function fetchPosts(page = 0, pageSize = 12) {
   }
 }
 
+// Fetch sesbian with pagination
+export async function fetchSesbian(page = 0, pageSize = 12) {
+  try {
+    const response = await fetch(
+      `${API_BASE}/content/sesbian?page=${page}&pageSize=${pageSize}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'force-cache',
+        next: { revalidate: 300 }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch sesbian: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error('Error fetching sesbian:', error);
+    return [];
+  }
+}
+
 // Client-side fetch functions for dynamic content
 export const clientFetch = {
   async fanart(page = 0, pageSize = 12) {
@@ -96,6 +123,12 @@ export const clientFetch = {
   async screenshots(page = 0, pageSize = 12) {
     const response = await fetch(`/api/content/screenshots?page=${page}&pageSize=${pageSize}`);
     if (!response.ok) throw new Error('Failed to fetch screenshots');
+    return response.json();
+  },
+
+  async sesbian(page = 0, pageSize = 12) {
+    const response = await fetch(`/api/content/sesbian?page=${page}&pageSize=${pageSize}`);
+    if (!response.ok) throw new Error('Failed to fetch sesbian');
     return response.json();
   },
 

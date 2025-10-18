@@ -34,6 +34,22 @@ export async function fetchScreenshots(page = 0, pageSize = 12) {
 }
 
 
+// fetch latest sesbian
+export async function fetchSesbian(page = 0, pageSize = 12) {
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error } = await supabase
+    .from("sesbian")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+
 // fetch latest posts
 export async function fetchPosts(limit = 10) {
   const { data, error } = await supabase

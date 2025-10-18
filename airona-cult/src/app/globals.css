@@ -44,3 +44,10 @@ a {
     color-scheme: dark;
   }
 }
+
+/* POP♡RONA Button Styles */
+.poprona-button:hover {
+  background-color: #c44569 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 157, 0.6) !important;
+}
