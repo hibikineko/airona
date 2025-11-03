@@ -123,48 +123,17 @@ export default function HalloweenResultsPage() {
           🎃 Halloween Voting Results 🎃
         </Typography>
         <Typography variant="subtitle1" color="text.secondary">
-          Current standings and statistics
+          Rankings based on tournament placements
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Each voter completes a full tournament bracket with their choices!
         </Typography>
       </Box>
-
-      {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
-            <CardContent sx={{ textAlign: "center", color: "white" }}>
-              <Typography variant="h3" fontWeight="bold">
-                {stats.totalVotes}
-              </Typography>
-              <Typography variant="h6">Total Votes Cast</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" }}>
-            <CardContent sx={{ textAlign: "center", color: "white" }}>
-              <Typography variant="h3" fontWeight="bold">
-                {stats.totalVoters}
-              </Typography>
-              <Typography variant="h6">Unique Voters</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" }}>
-            <CardContent sx={{ textAlign: "center", color: "white" }}>
-              <Typography variant="h3" fontWeight="bold">
-                {stats.totalSubmissions}
-              </Typography>
-              <Typography variant="h6">Total Submissions</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
 
       {/* Top 3 Podium */}
       {results.length >= 3 && (
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ textAlign: "center" }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ textAlign: "center", mb: 3 }}>
             🏆 Top 3 Winners 🏆
           </Typography>
           <Grid container spacing={2} justifyContent="center" alignItems="flex-end">
@@ -173,21 +142,25 @@ export default function HalloweenResultsPage() {
               <Card sx={{ 
                 textAlign: "center", 
                 border: "3px solid #C0C0C0",
-                height: 320
+                minHeight: 380
               }}>
                 <Box
                   component="img"
                   src={results[1].image_url}
                   alt={results[1].author_name}
-                  sx={{ width: "100%", height: 200, objectFit: "cover" }}
+                  sx={{ width: "100%", height: 220, objectFit: "contain", backgroundColor: "#f5f5f5" }}
                 />
-                <CardContent>
-                  <Typography variant="h4">🥈</Typography>
+                <CardContent sx={{ pt: 2 }}>
+                  <Typography variant="h4" sx={{ mb: 1 }}>🥈</Typography>
                   <Typography variant="h6" fontWeight="bold">
                     {results[1].author_name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {results[1].wins} wins • {results[1].total_votes} votes
+                  <Chip 
+                    label={`${results[1].first_place_count || 0} 🥇 ${results[1].second_place_count || 0} 🥈 ${results[1].third_place_count || 0} 🥉`}
+                    sx={{ backgroundColor: "#C0C0C0", color: "white", fontWeight: "bold", mt: 1 }}
+                  />
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    {results[1].total_tournaments || 0} tournaments
                   </Typography>
                 </CardContent>
               </Card>
@@ -198,22 +171,26 @@ export default function HalloweenResultsPage() {
               <Card sx={{ 
                 textAlign: "center", 
                 border: "4px solid #FFD700",
-                height: 360,
-                transform: "scale(1.05)"
+                minHeight: 420,
+                transform: { md: "scale(1.05)" }
               }}>
                 <Box
                   component="img"
                   src={results[0].image_url}
                   alt={results[0].author_name}
-                  sx={{ width: "100%", height: 220, objectFit: "cover" }}
+                  sx={{ width: "100%", height: 250, objectFit: "contain", backgroundColor: "#f5f5f5" }}
                 />
-                <CardContent>
-                  <Typography variant="h3">🥇</Typography>
+                <CardContent sx={{ pt: 2 }}>
+                  <Typography variant="h3" sx={{ mb: 1 }}>🥇</Typography>
                   <Typography variant="h5" fontWeight="bold">
                     {results[0].author_name}
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    {results[0].wins} wins • {results[0].total_votes} votes
+                  <Chip 
+                    label={`${results[0].first_place_count || 0} 🥇 ${results[0].second_place_count || 0} 🥈 ${results[0].third_place_count || 0} 🥉`}
+                    sx={{ backgroundColor: "#FFD700", color: "white", fontWeight: "bold", fontSize: "1.1rem", mt: 1 }}
+                  />
+                  <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                    {results[0].total_tournaments || 0} tournaments
                   </Typography>
                 </CardContent>
               </Card>
@@ -224,21 +201,25 @@ export default function HalloweenResultsPage() {
               <Card sx={{ 
                 textAlign: "center", 
                 border: "3px solid #CD7F32",
-                height: 320
+                minHeight: 380
               }}>
                 <Box
                   component="img"
                   src={results[2].image_url}
                   alt={results[2].author_name}
-                  sx={{ width: "100%", height: 200, objectFit: "cover" }}
+                  sx={{ width: "100%", height: 220, objectFit: "contain", backgroundColor: "#f5f5f5" }}
                 />
-                <CardContent>
-                  <Typography variant="h4">🥉</Typography>
+                <CardContent sx={{ pt: 2 }}>
+                  <Typography variant="h4" sx={{ mb: 1 }}>🥉</Typography>
                   <Typography variant="h6" fontWeight="bold">
                     {results[2].author_name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {results[2].wins} wins • {results[2].total_votes} votes
+                  <Chip 
+                    label={`${results[2].first_place_count || 0} 🥇 ${results[2].second_place_count || 0} 🥈 ${results[2].third_place_count || 0} 🥉`}
+                    sx={{ backgroundColor: "#CD7F32", color: "white", fontWeight: "bold", mt: 1 }}
+                  />
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    {results[2].total_tournaments || 0} tournaments
                   </Typography>
                 </CardContent>
               </Card>
@@ -260,9 +241,8 @@ export default function HalloweenResultsPage() {
                   <TableCell><strong>Rank</strong></TableCell>
                   <TableCell><strong>Submission</strong></TableCell>
                   <TableCell><strong>Author</strong></TableCell>
-                  <TableCell align="center"><strong>Wins</strong></TableCell>
-                  <TableCell align="center"><strong>Losses</strong></TableCell>
-                  <TableCell align="center"><strong>Total Votes</strong></TableCell>
+                  <TableCell align="center"><strong>Tournament Placements</strong></TableCell>
+                  <TableCell align="center"><strong>Total Tournaments</strong></TableCell>
                   <TableCell align="center"><strong>Win Rate</strong></TableCell>
                 </TableRow>
               </TableHead>
@@ -295,12 +275,31 @@ export default function HalloweenResultsPage() {
                       <Typography fontWeight="bold">{result.author_name}</Typography>
                     </TableCell>
                     <TableCell align="center">
-                      <Chip label={result.wins} color="success" size="small" />
+                      <Box sx={{ display: "flex", gap: 1, justifyContent: "center", alignItems: "center" }}>
+                        <Chip 
+                          label={`🥇 ${result.first_place_count || 0}`}
+                          size="small"
+                          sx={{ backgroundColor: "#FFD700", color: "white", fontWeight: "bold" }}
+                        />
+                        <Chip 
+                          label={`🥈 ${result.second_place_count || 0}`}
+                          size="small"
+                          sx={{ backgroundColor: "#C0C0C0", color: "white", fontWeight: "bold" }}
+                        />
+                        <Chip 
+                          label={`🥉 ${result.third_place_count || 0}`}
+                          size="small"
+                          sx={{ backgroundColor: "#CD7F32", color: "white", fontWeight: "bold" }}
+                        />
+                      </Box>
                     </TableCell>
                     <TableCell align="center">
-                      <Chip label={result.losses} color="error" size="small" />
+                      <Chip 
+                        label={result.total_tournaments || 0} 
+                        color="primary" 
+                        sx={{ fontWeight: "bold" }}
+                      />
                     </TableCell>
-                    <TableCell align="center">{result.total_votes}</TableCell>
                     <TableCell align="center">
                       <Typography fontWeight="bold" color="primary">
                         {result.win_percentage}%
