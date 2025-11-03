@@ -55,11 +55,46 @@ export default function HalloweenVotePage() {
   const [isDoubleElim, setIsDoubleElim] = useState(false);
   const [roundRobinMatches, setRoundRobinMatches] = useState([]);
   const [roundRobinResults, setRoundRobinResults] = useState({});
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
     fetchSubmissions();
     checkIfVoted();
   }, []);
+
+  useEffect(() => {
+    if (currentMatch) {
+      setImagesLoaded(false);
+      setCountdown(3);
+      
+      // Preload images
+      const img1 = new Image();
+      const img2 = new Image();
+      let loaded = 0;
+      
+      const checkLoaded = () => {
+        loaded++;
+        if (loaded === 2) {
+          setImagesLoaded(true);
+        }
+      };
+      
+      img1.onload = checkLoaded;
+      img2.onload = checkLoaded;
+      img1.src = currentMatch[0].image_url;
+      img2.src = currentMatch[1].image_url;
+    }
+  }, [currentMatch]);
+
+  useEffect(() => {
+    if (imagesLoaded && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [imagesLoaded, countdown]);
 
   const checkIfVoted = () => {
     const votedUsers = JSON.parse(localStorage.getItem('halloween_voted_users') || '[]');
@@ -486,17 +521,24 @@ export default function HalloweenVotePage() {
                 }}
               />
               <CardContent>
-                <Typography variant="h5" gutterBottom fontWeight="bold">
-                  {currentMatch[0].author_name}
-                </Typography>
                 <Button 
                   variant="contained" 
                   fullWidth 
                   size="large"
-                  sx={{ mt: 2, backgroundColor: "#ff6b00", fontSize: "1.1rem", py: 1.5 }}
+                  disabled={!imagesLoaded || countdown > 0}
+                  sx={{ 
+                    mt: 2, 
+                    backgroundColor: "#ff6b00", 
+                    fontSize: "1.1rem", 
+                    py: 1.5,
+                    "&:disabled": {
+                      backgroundColor: "#ccc",
+                      color: "#666",
+                    }
+                  }}
                   onClick={() => roundRobinMatches.length > 0 ? handleRoundRobinVote(currentMatch[0]) : handleVote(currentMatch[0])}
                 >
-                  Vote for this
+                  {!imagesLoaded ? "Loading images..." : countdown > 0 ? `Wait ${countdown}s` : "Vote for this"}
                 </Button>
               </CardContent>
             </HalloweenCard>
@@ -526,17 +568,24 @@ export default function HalloweenVotePage() {
                 }}
               />
               <CardContent>
-                <Typography variant="h5" gutterBottom fontWeight="bold">
-                  {currentMatch[1].author_name}
-                </Typography>
                 <Button 
                   variant="contained" 
                   fullWidth 
                   size="large"
-                  sx={{ mt: 2, backgroundColor: "#ff6b00", fontSize: "1.1rem", py: 1.5 }}
+                  disabled={!imagesLoaded || countdown > 0}
+                  sx={{ 
+                    mt: 2, 
+                    backgroundColor: "#ff6b00", 
+                    fontSize: "1.1rem", 
+                    py: 1.5,
+                    "&:disabled": {
+                      backgroundColor: "#ccc",
+                      color: "#666",
+                    }
+                  }}
                   onClick={() => roundRobinMatches.length > 0 ? handleRoundRobinVote(currentMatch[1]) : handleVote(currentMatch[1])}
                 >
-                  Vote for this
+                  {!imagesLoaded ? "Loading images..." : countdown > 0 ? `Wait ${countdown}s` : "Vote for this"}
                 </Button>
               </CardContent>
             </HalloweenCard>
