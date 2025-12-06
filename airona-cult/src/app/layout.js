@@ -3,12 +3,16 @@
 import { useState, useMemo, useEffect } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import getAironaTheme from "../theme/aironaTheme";
-import Header from "@/components/layout/header";
+import ModernHeader from "@/components/layout/ModernHeader";
+import LoadingScreen from "@/components/LoadingScreen";
 import { SessionProvider } from "next-auth/react";
 import { Analytics } from '@vercel/analytics/next';
+import { usePathname } from "next/navigation";
 
 export default function RootLayout({ children }) {
   const [mode, setMode] = useState("light");
+  const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
 
   // Load saved theme on mount
   useEffect(() => {
@@ -22,6 +26,13 @@ export default function RootLayout({ children }) {
   useEffect(() => {
     localStorage.setItem("themeMode", mode);
   }, [mode]);
+
+  // Show loading screen on route change
+  useEffect(() => {
+    setLoading(true);
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   const theme = useMemo(() => getAironaTheme(mode), [mode]);
 
@@ -57,7 +68,8 @@ export default function RootLayout({ children }) {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <SessionProvider>
-          <Header toggleMode={toggleMode} />
+          {loading && <LoadingScreen onLoadingComplete={() => setLoading(false)} />}
+          <ModernHeader toggleMode={toggleMode} />
           {children}
           <Analytics />
           </SessionProvider>
