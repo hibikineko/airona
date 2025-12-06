@@ -261,7 +261,7 @@ export default function EventsPage() {
             Full Interactive Calendar Coming Soon!
           </Typography>
           <Typography variant="body1" sx={{ opacity: 0.95 }}>
-            We're working on a beautiful calendar view with character birthdays, event reminders, and more!
+            We&apos;re working on a beautiful calendar view with character birthdays, event reminders, and more!
           </Typography>
         </Box>
       </Container>
