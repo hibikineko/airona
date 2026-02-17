@@ -28,24 +28,24 @@ const aironaTraits = [
   {
     image: "/airona/airona_dollar.png",
     title: "Treasure Hunter",
-    description: "Loves collecting Lunos and treasures! Can't resist a good deal or shiny loot. 💰",
+    description: "Loves collecting Lunos and treasures! Can&apos;t resist a good deal or shiny loot. 💰",
     color: "#8DC262"
   },
   {
     image: "/airona/airona_tehehe.png",
     title: "Mischievous Teaser",
-    description: "Has a bit of a mischievous streak and enjoys teasing those she's close to. Tehehe~",
+    description: "Has a bit of a mischievous streak and enjoys teasing those she&apos;s close to. Tehehe~",
     color: "#FF6B9D"
   },
 ];
 
 const aironaFacts = [
   "Uses a Rune Ring as her weapon of choice",
-  'Often says she "can\'t be bothered with trouble," but she\'s incredibly reliable when it matters most',
+  "Often says she \"can&apos;t be bothered with trouble,\" but she&apos;s incredibly reliable when it matters most",
   "Treasures her hair and takes great care of it",
   "Her origins remain a mystery - no one on The Continent of Magna knows where she came from",
   "She brought you back from the forest, and your story with her has only just begun",
-  '"Don\'t be shackled by yesterday, because I will face the uncharted, unknown tomorrow with you."'
+  "\"Don&apos;t be shackled by yesterday, because I will face the uncharted, unknown tomorrow with you.\""
 ];
 
 export default function AironaClient() {
@@ -292,7 +292,7 @@ export default function AironaClient() {
           }}
         >
           <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-            Join Airona's Adventures!
+            Join Airona&apos;s Adventures!
           </Typography>
           <Typography variant="h6" sx={{ mb: 4, opacity: 0.95 }}>
             Explore BPSR content, play games, and share your moments with the community!
