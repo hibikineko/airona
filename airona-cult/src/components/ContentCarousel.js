@@ -1,148 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import Slider from "react-slick";
+import { Box, Typography, Grid, Card } from "@mui/material";
 import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  Dialog,
-  IconButton,
-  useMediaQuery,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import Link from "next/link";
 
-export default function ContentCarousel({ title, items, type }) {
-  const [openImage, setOpenImage] = useState(null);
-
-  // detect screen size for better aspect ratio
-  const isMobile = useMediaQuery("(max-width:600px)");
-
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: isMobile ? 1 : 3,
-    slidesToScroll: 1,
-    centerMode: false,
-  };
+export default function ContentCarousel({ title, items = [], type }) {
+  if (!items || items.length === 0) {
+    return null;
+  }
 
   return (
-    <div style={{ marginBottom: "2rem" }}>
-      <Typography variant="h5" gutterBottom>
+    <Box sx={{ mb: 4 }}>
+      <Typography
+        variant="h5"
+        sx={{
+          mb: 3,
+          fontWeight: 600,
+          textAlign: "center",
+        }}
+      >
         {title}
       </Typography>
-      <Slider {...settings}>
-        {items.map((item) => (
-          <Box key={item.id} px={isMobile ? 0.5 : 1}>
+      <Grid container spacing={2}>
+        {items.slice(0, 6).map((item, index) => (
+          <Grid item xs={6} sm={4} md={2} key={index}>
             <Card
               sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
+                position: "relative",
+                paddingTop: "100%",
+                borderRadius: "12px",
+                overflow: "hidden",
                 cursor: "pointer",
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                },
               }}
             >
-              {item.image_url && (
-                <Box
-                  sx={{
-                    position: "relative",
-                    width: "100%",
-                    height: 0,
-                    paddingTop: isMobile ? "100%" : "70%", // bigger, square-ish on mobile
-                  }}
-                  onClick={() => setOpenImage(item.image_url)}
-                >
-                  <Image
-                    src={item.image_url}
-                    alt={item.title || "content"}
-                    fill
-                    style={{
-                      objectFit: "cover",
-                      objectPosition: "center",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      width: "100%",
-                      bgcolor: "rgba(0,0,0,0.5)",
-                      color: "#fff",
-                      p: 0.5,
-                    }}
-                  >
-                    <Typography variant="subtitle2">
-                      {item.title || "Untitled"}
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-              {type === "posts" && (
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="body2">{item.text}</Typography>
-                </CardContent>
-              )}
-              {type === "fanart" && (
-                <CardContent sx={{ flexGrow: 1 }}>
-                  {item.source ? (
-                    <Typography variant="caption">
-                      Source:{" "}
-                      <a
-                        href={item.source}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "#1976d2" }}
-                      >
-                        {item.source}
-                      </a>
-                    </Typography>
-                  ) : (
-                    <Typography variant="caption">Source: N/A</Typography>
-                  )}
-                </CardContent>
-              )}
+              <Image
+                src={item.url || item.image_url}
+                alt={item.alt || item.title || `${type} ${index + 1}`}
+                fill
+                style={{ objectFit: "cover" }}
+                sizes="(max-width: 600px) 50vw, (max-width: 960px) 33vw, 16vw"
+              />
             </Card>
-          </Box>
+          </Grid>
         ))}
-      </Slider>
-
-      {/* Image Lightbox */}
-      <Dialog open={!!openImage} onClose={() => setOpenImage(null)} maxWidth="lg">
-        <Box sx={{ position: "relative" }}>
-          <IconButton
-            sx={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              color: "white",
-              zIndex: 10,
-            }}
-            onClick={() => setOpenImage(null)}
-          >
-            <CloseIcon />
-          </IconButton>
-          {openImage && (
-            <Image
-              src={openImage}
-              alt="Large view"
-              width={1200}
-              height={1200}
-              style={{
-                width: "100%",
-                height: "auto",
-                objectFit: "contain",
-              }}
-            />
-          )}
-        </Box>
-      </Dialog>
-    </div>
+      </Grid>
+    </Box>
   );
 }

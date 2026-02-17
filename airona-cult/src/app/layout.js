@@ -44,8 +44,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Airona Cult" />
-        <meta property="og:description" content="Follow Airona and prosper in Lunos and adventure! 🪙✨" />
+        <meta property="og:title" content="Airona Cult - BPSR Community" />
+        <meta property="og:description" content="Your Blue Protocol Star Resonance community hub! Share screenshots, fanart, and enjoy fun games with Airona! 🎮✨" />
         <meta property="og:image" content="https://airona.club/airona/airona2.png" />
         <meta property="og:url" content="https://airona.club" />
         <meta property="og:type" content="website" />
@@ -53,12 +53,12 @@ export default function RootLayout({ children }) {
         
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Airona Cult" />
-        <meta name="twitter:description" content="Follow Airona and prosper in Lunos and adventure! 🪙✨" />
+        <meta name="twitter:title" content="Airona Cult - BPSR Community" />
+        <meta name="twitter:description" content="Your Blue Protocol Star Resonance community hub! Share screenshots, fanart, and enjoy fun games with Airona! 🎮✨" />
         <meta name="twitter:image" content="https://airona.club/airona/airona2.png" />
         
         {/* General Meta Tags */}
-        <meta name="description" content="Airona Cult - Follow Airona and prosper in Lunos and adventure! 🪙✨" />
+        <meta name="description" content="Airona Cult - Your Blue Protocol Star Resonance community hub! 🎮✨" />
         <meta name="theme-color" content="#A6D86C" />
         
         {/* Force Light Theme for Social Previews */}

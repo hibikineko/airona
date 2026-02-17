@@ -1,19 +1,5 @@
-import { fetchFanart, fetchScreenshots, fetchSesbian } from "@/lib/fetchContentSecure";
-import ModernBPSRClient from "./ModernBPSRClient";
+import AironaClient from "./AironaClient";
 
-export default async function ModernBPSRPage() {
-  // Fetch content from database
-  const [fanart, screenshots, sesbian] = await Promise.all([
-    fetchFanart(0, 12),
-    fetchScreenshots(0, 12),
-    fetchSesbian(0, 12),
-  ]);
-
-  return (
-    <ModernBPSRClient 
-      fanart={fanart}
-      screenshots={screenshots}
-      sesbian={sesbian}
-    />
-  );
+export default async function AironaPage() {
+  return <AironaClient />;
 }

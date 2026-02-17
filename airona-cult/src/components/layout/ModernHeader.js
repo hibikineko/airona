@@ -7,8 +7,6 @@ import {
   Typography, 
   IconButton, 
   Box, 
-  Menu, 
-  MenuItem,
   Button,
   Drawer,
   List,
@@ -16,18 +14,14 @@ import {
   ListItemButton,
   ListItemText,
   useMediaQuery,
-  useTheme as useMuiTheme,
-  Collapse
+  useTheme as useMuiTheme
 } from "@mui/material";
 import { 
   Brightness4, 
   Brightness7, 
   Menu as MenuIcon,
   Close as CloseIcon,
-  ExpandMore,
-  ExpandLess,
   SportsEsports,
-  Event,
   PhotoLibrary,
   Group,
   Home
@@ -38,18 +32,12 @@ import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { FaDiscord } from "react-icons/fa";
 
-const games = [
-  { name: "Blue Protocol SR", path: "/airona", icon: "🎮" },
-  { name: "Where Winds Meet", path: "/game/wwm", icon: "🗡️" },
-  { name: "Wuthering Waves", path: "/game/wuwa", icon: "🌊" },
-  { name: "Honkai Star Rail", path: "/game/hsr", icon: "⭐" },
-];
-
 const mainNavItems = [
   { name: "Home", path: "/", icon: <Home /> },
-  { name: "Events", path: "/events", icon: <Event /> },
+  { name: "Airona", path: "/airona", icon: <Group /> },
+  { name: "BPSR", path: "/bpsr", icon: <SportsEsports /> },
   { name: "Gallery", path: "/gallery", icon: <PhotoLibrary /> },
-  { name: "Community", path: "/guild", icon: <Group /> },
+  { name: "Memory Game", path: "/game/card", icon: <SportsEsports /> },
 ];
 
 export default function ModernHeader({ toggleMode }) {
@@ -58,24 +46,10 @@ export default function ModernHeader({ toggleMode }) {
   const { data: session } = useSession();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("md"));
   
-  const [gamesAnchor, setGamesAnchor] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [gamesOpen, setGamesOpen] = useState(false);
-
-  const handleGamesClick = (event) => {
-    setGamesAnchor(event.currentTarget);
-  };
-
-  const handleGamesClose = () => {
-    setGamesAnchor(null);
-  };
 
   const toggleDrawer = () => {
     setMobileOpen(!mobileOpen);
-  };
-
-  const toggleGamesMenu = () => {
-    setGamesOpen(!gamesOpen);
   };
 
   // Desktop navigation
@@ -105,74 +79,6 @@ export default function ModernHeader({ toggleMode }) {
           {item.name}
         </Button>
       ))}
-      
-      {/* Games Dropdown */}
-      <Button
-        startIcon={<SportsEsports />}
-        endIcon={<ExpandMore />}
-        onClick={handleGamesClick}
-        sx={{
-          color: "white",
-          px: 2,
-          py: 1,
-          borderRadius: "12px",
-          fontWeight: 600,
-          fontSize: "1.05rem",
-          fontFamily: "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, system-ui",
-          transition: "all 0.3s ease",
-          "&:hover": {
-            background: "rgba(255, 255, 255, 0.15)",
-            transform: "translateY(-2px)",
-          },
-        }}
-      >
-        Games
-      </Button>
-      <Menu
-        anchorEl={gamesAnchor}
-        open={Boolean(gamesAnchor)}
-        onClose={handleGamesClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        PaperProps={{
-          sx: {
-            mt: 1,
-            borderRadius: "16px",
-            minWidth: 200,
-            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-          },
-        }}
-      >
-        {games.map((game) => (
-          <MenuItem
-            key={game.name}
-            component={Link}
-            href={game.path}
-            onClick={handleGamesClose}
-            sx={{
-              py: 1.5,
-              px: 2.5,
-              fontFamily: "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, system-ui",
-              fontSize: "1rem",
-              fontWeight: 500,
-              "&:hover": {
-                background: theme.palette.mode === "light" 
-                  ? "rgba(140, 194, 98, 0.1)" 
-                  : "rgba(166, 216, 108, 0.1)",
-              },
-            }}
-          >
-            <Typography sx={{ mr: 1 }}>{game.icon}</Typography>
-            {game.name}
-          </MenuItem>
-        ))}
-      </Menu>
     </Box>
   );
 
@@ -239,70 +145,6 @@ export default function ModernHeader({ toggleMode }) {
               </ListItemButton>
             </ListItem>
           ))}
-          
-          {/* Games submenu */}
-          <ListItem disablePadding sx={{ mb: 1 }}>
-            <ListItemButton
-              onClick={toggleGamesMenu}
-              sx={{
-                borderRadius: "12px",
-                "&:hover": {
-                  background: theme.palette.mode === "light" 
-                    ? "rgba(140, 194, 98, 0.1)" 
-                    : "rgba(166, 216, 108, 0.1)",
-                },
-              }}
-            >
-              <SportsEsports />
-              <ListItemText 
-                primary="Games" 
-                sx={{ 
-                  ml: 2,
-                  '& .MuiTypography-root': {
-                    fontFamily: "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, system-ui",
-                    fontSize: "1.05rem",
-                    fontWeight: 500,
-                  }
-                }} 
-              />
-              {gamesOpen ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
-          </ListItem>
-          
-          <Collapse in={gamesOpen} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {games.map((game) => (
-                <ListItemButton
-                  key={game.name}
-                  component={Link}
-                  href={game.path}
-                  onClick={toggleDrawer}
-                  sx={{
-                    pl: 4,
-                    borderRadius: "12px",
-                    mb: 0.5,
-                    "&:hover": {
-                      background: theme.palette.mode === "light" 
-                        ? "rgba(140, 194, 98, 0.1)" 
-                        : "rgba(166, 216, 108, 0.1)",
-                    },
-                  }}
-                >
-                  <Typography sx={{ mr: 1 }}>{game.icon}</Typography>
-                  <ListItemText 
-                    primary={game.name}
-                    sx={{
-                      '& .MuiTypography-root': {
-                        fontFamily: "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, system-ui",
-                        fontSize: "1rem",
-                        fontWeight: 500,
-                      }
-                    }}
-                  />
-                </ListItemButton>
-              ))}
-            </List>
-          </Collapse>
         </List>
       </Box>
     </Drawer>

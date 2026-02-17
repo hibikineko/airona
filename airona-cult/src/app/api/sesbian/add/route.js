@@ -8,10 +8,19 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// Admin Discord IDs - must match check-admin route
+const ADMIN_IDS = process.env.ADMIN_DISCORD_IDS?.split(',') || [];
+
 export async function POST(req) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
+  // Check if user is admin
+  const isAdmin = ADMIN_IDS.includes(session.user.id);
+  if (!isAdmin) {
+    return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   }
 
   const formData = await req.formData();

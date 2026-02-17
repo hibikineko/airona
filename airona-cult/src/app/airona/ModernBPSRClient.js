@@ -1,29 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import {
   Box,
   Container,
   Typography,
   Button,
   useTheme,
-  Tooltip,
 } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import ContentCarousel from "@/components/ContentCarousel";
 
-// Flower menu items (games)
-const flowerPetals = [
-  { title: "Fortune Draw", icon: "🎴", link: "/game/fortune", color: "#FFD700", angle: 0 },
-  { title: "Clicker Game", icon: "🪙", link: "/game/clicker", color: "#FF6B9D", angle: 120 },
-  { title: "Memory Puzzle", icon: "🧩", link: "/game/card", color: "#9C5DC9", angle: 240 },
-];
-
 export default function ModernBPSRClient({ fanart = [], screenshots = [], sesbian = [] }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
-  const [flowerOpen, setFlowerOpen] = useState(false);
 
   return (
     <Box>
@@ -128,120 +118,11 @@ export default function ModernBPSRClient({ fanart = [], screenshots = [], sesbia
                 }}
               >
                 Bubbly, curious, and mischievous — but very serious when it comes to money! 
-                Join Airona in exploring games, events, and community content. 💰✨
+                Join Airona in sharing your BPSR moments and playing fun games. 💰✨
               </Typography>
             </Box>
           </Box>
         </Container>
-      </Box>
-
-      {/* Floating Flower Menu - Top Position */}
-      <Box
-        sx={{
-          position: "fixed",
-          top: { xs: 90, md: 100 },
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 1000,
-          transition: "top 0.3s ease",
-          ...(flowerOpen && {
-            top: { xs: 140, md: 160 },
-          }),
-        }}
-      >
-        {/* Petals */}
-        {flowerOpen && flowerPetals.map((petal, index) => {
-          const angle = (petal.angle * Math.PI) / 180;
-          const radius = { xs: 90, sm: 110, md: 130 };
-          const radiusValue = typeof radius === 'object' ? 110 : radius;
-          const x = Math.cos(angle) * radiusValue;
-          const y = Math.sin(angle) * radiusValue;
-          
-          return (
-            <Tooltip key={index} title={petal.title} placement="top">
-              <Box
-                component={Link}
-                href={petal.link}
-                sx={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  width: { xs: 55, md: 65 },
-                  height: { xs: 55, md: 65 },
-                  borderRadius: "50%",
-                  background: petal.color,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: { xs: "1.8rem", md: "2rem" },
-                  textDecoration: "none",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
-                  cursor: "pointer",
-                  transform: flowerOpen 
-                    ? `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1)`
-                    : "translate(-50%, -50%) scale(0)",
-                  transition: `all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) ${index * 0.08}s`,
-                  opacity: flowerOpen ? 1 : 0,
-                  "&:hover": {
-                    transform: flowerOpen 
-                      ? `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1.15)`
-                      : "translate(-50%, -50%) scale(0)",
-                    boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
-                    zIndex: 1,
-                  },
-                }}
-              >
-                {petal.icon}
-              </Box>
-            </Tooltip>
-          );
-        })}
-
-        {/* Center Button */}
-        <Box
-          onClick={() => setFlowerOpen(!flowerOpen)}
-          sx={{
-            position: "relative",
-            width: { xs: 75, md: 85 },
-            height: { xs: 75, md: 85 },
-            borderRadius: "50%",
-            background: flowerOpen
-              ? "linear-gradient(135deg, #FF6B9D, #C44569)"
-              : "linear-gradient(135deg, #8DC262, #A6D86C)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: { xs: "2.2rem", md: "2.5rem" },
-            cursor: "pointer",
-            boxShadow: "0 8px 28px rgba(0,0,0,0.35)",
-            transition: "all 0.3s ease",
-            animation: "pulse 2s ease-in-out infinite",
-            "&:hover": {
-              transform: "scale(1.1) rotate(90deg)",
-              boxShadow: "0 12px 36px rgba(0,0,0,0.45)",
-            },
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              width: "100%",
-              height: "100%",
-              borderRadius: "50%",
-              background: "inherit",
-              opacity: 0.4,
-              animation: "ripple 2.5s ease-out infinite",
-            },
-            "@keyframes pulse": {
-              "0%, 100%": { boxShadow: "0 8px 28px rgba(140, 194, 98, 0.5)" },
-              "50%": { boxShadow: "0 8px 36px rgba(140, 194, 98, 0.8)" },
-            },
-            "@keyframes ripple": {
-              "0%": { transform: "scale(1)", opacity: 0.4 },
-              "100%": { transform: "scale(1.6)", opacity: 0 },
-            },
-          }}
-        >
-          {flowerOpen ? "✕" : "🎮"}
-        </Box>
       </Box>
 
       {/* Content Sections */}
@@ -280,7 +161,7 @@ export default function ModernBPSRClient({ fanart = [], screenshots = [], sesbia
           </Button>
           <Button
             component={Link}
-            href="/events"
+            href="/game/card"
             variant="contained"
             size="large"
             sx={{
@@ -298,11 +179,11 @@ export default function ModernBPSRClient({ fanart = [], screenshots = [], sesbia
               },
             }}
           >
-            🎉 Check Events
+            🧩 Memory Game
           </Button>
           <Button
             component={Link}
-            href="/guild"
+            href="/upload"
             variant="contained"
             size="large"
             sx={{
@@ -320,7 +201,7 @@ export default function ModernBPSRClient({ fanart = [], screenshots = [], sesbia
               },
             }}
           >
-            👥 Join Community
+            📤 Upload Content
           </Button>
         </Box>
 
@@ -428,15 +309,15 @@ export default function ModernBPSRClient({ fanart = [], screenshots = [], sesbia
           }}
         >
           <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-            Ready to Join the Adventure?
+            Ready to Share Your BPSR Moments?
           </Typography>
           <Typography variant="h6" sx={{ mb: 4, opacity: 0.95 }}>
-            Explore our games, events, and connect with the community!
+            Upload your screenshots, fanart, and connect with other BPSR fans!
           </Typography>
           <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
             <Button
               component={Link}
-              href="/game/fortune"
+              href="/upload"
               variant="contained"
               size="large"
               sx={{
@@ -454,11 +335,11 @@ export default function ModernBPSRClient({ fanart = [], screenshots = [], sesbia
                 },
               }}
             >
-              Try Fortune Draw 🎴
+              Upload Content 📤
             </Button>
             <Button
               component={Link}
-              href="/guild"
+              href="/game/card"
               variant="outlined"
               size="large"
               sx={{
@@ -478,7 +359,7 @@ export default function ModernBPSRClient({ fanart = [], screenshots = [], sesbia
                 },
               }}
             >
-              Join Guild 👥
+              Play Memory Game 🧩
             </Button>
           </Box>
         </Box>
