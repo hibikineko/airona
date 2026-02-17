@@ -1,52 +1,88 @@
-import { supabase } from "@/lib/supabaseClient";
+// Secure server-side content fetching using internal API routes
+const API_BASE = process.env.NODE_ENV === 'production' 
+  ? 'https://airona.club/api' 
+  : 'http://localhost:3000/api';
 
-// fetch latest fanart
-// fetch fanart with offset + limit
+// Fetch fanart with pagination
 export async function fetchFanart(page = 0, pageSize = 12) {
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
+  try {
+    const response = await fetch(
+      `${API_BASE}/content/fanart?page=${page}&pageSize=${pageSize}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Important: Use cache for server-side calls
+        cache: 'force-cache',
+        next: { revalidate: 300 } // Revalidate every 5 minutes
+      }
+    );
 
-  const { data, error } = await supabase
-    .from("fanart")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch fanart: ${response.status}`);
+    }
 
-  if (error) throw new Error(error.message);
-  console.log('fanart data:', data);
-  return data;
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error('Error fetching fanart:', error);
+    return [];
+  }
 }
 
-
-// fetch latest screenshots
+// Fetch screenshots with pagination
 export async function fetchScreenshots(page = 0, pageSize = 12) {
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
+  try {
+    const response = await fetch(
+      `${API_BASE}/content/screenshots?page=${page}&pageSize=${pageSize}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'force-cache',
+        next: { revalidate: 300 }
+      }
+    );
 
-  const { data, error } = await supabase
-    .from("screenshot")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch screenshots: ${response.status}`);
+    }
 
-  if (error) throw new Error(error.message);
-  return data;
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error('Error fetching screenshots:', error);
+    return [];
+  }
 }
 
-
-// fetch latest sesbian
+// Fetch sesbian with pagination
 export async function fetchSesbian(page = 0, pageSize = 12) {
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
+  try {
+    const response = await fetch(
+      `${API_BASE}/content/sesbian?page=${page}&pageSize=${pageSize}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'force-cache',
+        next: { revalidate: 300 }
+      }
+    );
 
-  const { data, error } = await supabase
-    .from("sesbian")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch sesbian: ${response.status}`);
+    }
 
-  if (error) throw new Error(error.message);
-  return data;
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error('Error fetching sesbian:', error);
+    return [];
+  }
 }
 
 

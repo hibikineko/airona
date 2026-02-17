@@ -3,52 +3,24 @@
 import { Box, Typography, Button, Container, Grid, Card, CardContent, useTheme } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  SportsEsports, 
-  Event, 
-  PhotoLibrary, 
-  Group,
-  Celebration,
-  TrendingUp
-} from "@mui/icons-material";
+import { PhotoLibrary } from "@mui/icons-material";
 
 const features = [
   {
-    title: "Blue Protocol SR",
-    description: "Explore the world of Star Resonance with Airona! Join our BPSR community.",
-    icon: "🎮",
+    title: "Meet Airona",
+    description: "Learn about our cheerful mascot and her personality, hobbies, and adventures in BPSR!",
+    icon: "🌿",
     color: "#8DC262",
     link: "/airona",
     image: "/airona/airona_happy.png"
   },
   {
-    title: "Where Winds Meet",
-    description: "Join our guild in the world of martial arts and Chinese fantasy adventure.",
-    color: "#C41E3A",
-    link: "/game/wwm",
-    image: "/wwm/Icon_WhereWindsMeet.png"
-  },
-  {
-    title: "Events & Activities",
-    description: "Stay updated with upcoming events, tournaments, and character birthdays.",
-    icon: <Event sx={{ fontSize: 48 }} />,
-    color: "#9C5DC9",
-    link: "/events"
-  },
-  {
     title: "Community Gallery",
-    description: "Share and discover amazing fanart, screenshots, and creative content.",
+    description: "Share and discover amazing fanart, screenshots, and creative content from BPSR.",
     icon: <PhotoLibrary sx={{ fontSize: 48 }} />,
     color: "#FF6B9D",
     link: "/gallery"
   },
-];
-
-const games = [
-  { name: "Blue Protocol SR", icon: "🎮", members: "150+", status: "Active" },
-  { name: "Where Winds Meet", icon: "🗡️", members: "80+", status: "Active" },
-  { name: "Wuthering Waves", icon: "🌊", members: "120+", status: "Active" },
-  { name: "Honkai Star Rail", icon: "⭐", members: "90+", status: "Active" },
 ];
 
 export default function HeroSection() {
@@ -138,51 +110,26 @@ export default function HeroSection() {
                     lineHeight: 1.6,
                   }}
                 >
-                  Your multi-game community hub for BPSR, WWM, WuWa, HSR and more.
-                  Join us for events, share content, and connect with fellow players! 🎮✨
+                  Your Blue Protocol Star Resonance community hub.
+                  Share screenshots, fanart, and enjoy fun games with Airona! 🎮✨
                 </Typography>
-                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                  <Button
-                    component={Link}
-                    href="/airona"
-                    variant="contained"
-                    size="large"
-                    className="airona-button"
-                    sx={{
-                      px: 4,
-                      py: 1.5,
-                      fontSize: "1.1rem",
-                      borderRadius: "16px",
-                      textTransform: "none",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Explore BPSR Section
-                  </Button>
-                  <Button
-                    component={Link}
-                    href="/guild"
-                    variant="outlined"
-                    size="large"
-                    sx={{
-                      px: 4,
-                      py: 1.5,
-                      fontSize: "1.1rem",
-                      borderRadius: "16px",
-                      textTransform: "none",
-                      fontWeight: 600,
-                      borderColor: theme.palette.primary.main,
-                      color: theme.palette.primary.main,
-                      "&:hover": {
-                        borderColor: theme.palette.primary.dark,
-                        background: "rgba(140, 194, 98, 0.1)",
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  >
-                    Join Community
-                  </Button>
-                </Box>
+                <Button
+                  component={Link}
+                  href="/airona"
+                  variant="contained"
+                  size="large"
+                  className="airona-button"
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    fontSize: "1.1rem",
+                    borderRadius: "16px",
+                    textTransform: "none",
+                    fontWeight: 600,
+                  }}
+                >
+                  Meet Airona
+                </Button>
               </Box>
             </Grid>
 
@@ -249,11 +196,11 @@ export default function HeroSection() {
             WebkitTextFillColor: "transparent",
           }}
         >
-          Explore Our Community
+          What We Offer
         </Typography>
         <Grid container spacing={4} justifyContent="center">
           {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index} sx={{ display: "flex" }}>
+            <Grid item xs={12} sm={6} md={4} key={index} sx={{ display: "flex" }}>
               <Card
                 component={Link}
                 href={feature.link}
@@ -325,72 +272,6 @@ export default function HeroSection() {
           ))}
         </Grid>
       </Container>
-
-      {/* Games Section */}
-      <Box
-        sx={{
-          py: 8,
-          background: isDark
-            ? "linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%)"
-            : "linear-gradient(135deg, #f8faf9 0%, #e8f5e9 100%)",
-        }}
-      >
-        <Container maxWidth="lg">
-          <Typography
-            variant="h2"
-            sx={{
-              textAlign: "center",
-              mb: 6,
-              fontWeight: 700,
-              background: "linear-gradient(135deg, #8DC262, #9C5DC9)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Our Games
-          </Typography>
-          <Grid container spacing={3} justifyContent="center" alignItems="stretch">
-            {games.map((game, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
-                <Card
-                  className="glass-card"
-                  sx={{
-                    p: 3,
-                    textAlign: "center",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                      boxShadow: "0 12px 32px rgba(140, 194, 98, 0.3)",
-                    },
-                  }}
-                >
-                  <Typography sx={{ fontSize: "3rem", mb: 2 }}>{game.icon}</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                    {game.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    {game.members} members
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "inline-block",
-                      px: 2,
-                      py: 0.5,
-                      borderRadius: "12px",
-                      background: "rgba(140, 194, 98, 0.2)",
-                      color: theme.palette.primary.main,
-                      fontWeight: 600,
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    {game.status}
-                  </Box>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
     </Box>
   );
 }

@@ -4,6 +4,9 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { strictRateLimit } from "@/lib/rateLimit";
 
+// Admin Discord IDs - must match check-admin route
+const ADMIN_IDS = process.env.ADMIN_DISCORD_IDS?.split(',') || [];
+
 export async function POST(request) {
   // Apply strict rate limiting for content uploads
   const rateLimitResult = strictRateLimit.check(request);
@@ -25,9 +28,16 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    // Check if user is admin
+    const isAdmin = ADMIN_IDS.includes(session.user.id);
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
     const formData = await request.formData();
     const title = formData.get("title");
     const source = formData.get("source");
+    const artist = formData.get("artist");
     const file = formData.get("image");
 
     // Validate inputs
@@ -70,6 +80,7 @@ export async function POST(request) {
       {
         title,
         source,
+        artist,
         image_url: imageUrl,
         author: session.user.id,
       },
