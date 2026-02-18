@@ -44,8 +44,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Airona Cult - BPSR Community" />
-        <meta property="og:description" content="Your Blue Protocol Star Resonance community hub! Share screenshots, fanart, and enjoy fun games with Airona! 🎮✨" />
+        <meta property="og:title" content="Airona Cult - ALL HAIL AIRONA" />
+        <meta property="og:description" content="Airona Cult where you will find screenshots, fanarts of airona and some more features incoming. Feel free to checkout!" />
         <meta property="og:image" content="https://airona.club/airona/airona2.png" />
         <meta property="og:url" content="https://airona.club" />
         <meta property="og:type" content="website" />
@@ -53,12 +53,12 @@ export default function RootLayout({ children }) {
         
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Airona Cult - BPSR Community" />
-        <meta name="twitter:description" content="Your Blue Protocol Star Resonance community hub! Share screenshots, fanart, and enjoy fun games with Airona! 🎮✨" />
+        <meta name="twitter:title" content="Airona Cult - ALL HAIL AIRONA" />
+        <meta name="twitter:description" content="Airona Cult where you will find screenshots, fanarts of airona and some more features incoming. Feel free to checkout!" />
         <meta name="twitter:image" content="https://airona.club/airona/airona2.png" />
         
         {/* General Meta Tags */}
-        <meta name="description" content="Airona Cult - Your Blue Protocol Star Resonance community hub! 🎮✨" />
+        <meta name="description" content="Airona Cult where you will find screenshots, fanarts of airona and some more features incoming. Feel free to checkout!" />
         <meta name="theme-color" content="#A6D86C" />
         
         {/* Force Light Theme for Social Previews */}
