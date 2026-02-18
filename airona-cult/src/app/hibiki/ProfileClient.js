@@ -6,13 +6,27 @@ import './profile.css';
 
 export default function ProfileClient() {
   const [mounted, setMounted] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   return (
-    <div className="profile-container">
+    <div className={`profile-container ${darkMode ? 'dark-mode' : ''}`}>
+      {/* Dark Mode Toggle */}
+      <button 
+        className="theme-toggle" 
+        onClick={toggleDarkMode}
+        aria-label="Toggle dark mode"
+      >
+        {darkMode ? '☀️' : '🌙'}
+      </button>
+      
       {/* Animated background */}
       <div className="profile-background">
         <div className="sparkle sparkle-1">✨</div>
