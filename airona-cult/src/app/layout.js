@@ -40,6 +40,9 @@ export default function RootLayout({ children }) {
     setMode((prev) => (prev === "light" ? "dark" : "light"));
   };
 
+  // Check if current page should hide header
+  const shouldHideHeader = pathname === '/hibiki';
+
   return (
     <html lang="en">
       <head>
@@ -69,7 +72,7 @@ export default function RootLayout({ children }) {
           <CssBaseline />
           <SessionProvider>
           {loading && <LoadingScreen onLoadingComplete={() => setLoading(false)} />}
-          <ModernHeader toggleMode={toggleMode} />
+          {!shouldHideHeader && <ModernHeader toggleMode={toggleMode} />}
           {children}
           <Analytics />
           </SessionProvider>
