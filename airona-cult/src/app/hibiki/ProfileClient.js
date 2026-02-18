@@ -152,7 +152,7 @@ export default function ProfileClient() {
               </h2>
               <div className="characters-grid">
                 <a 
-                  href="https://myanimelist.net/character/162567/Elaina"
+                  href="https://myanimelist.net/character/151335/Elaina?q=elaina&cat=character"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="character-card"
@@ -174,7 +174,7 @@ export default function ProfileClient() {
                 </a>
 
                 <a 
-                  href="https://myanimelist.net/character/154597/Elysia"
+                  href="https://myanimelist.net/character/223977/Elysia?q=elysia&cat=character"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="character-card"
@@ -196,7 +196,7 @@ export default function ProfileClient() {
                 </a>
 
                 <a 
-                  href="https://myanimelist.net/character/173417/Mahiru_Shiina"
+                  href="https://myanimelist.net/character/193569/Mahiru_Shiina?q=mahiru%20shiina&cat=character"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="character-card"
