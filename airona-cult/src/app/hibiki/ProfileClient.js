@@ -94,7 +94,12 @@ export default function ProfileClient() {
                   className="social-link discord"
                   title="@hibikineko"
                 >
-                  <span className="social-icon">💬</span> @hibikineko
+                  <img 
+                    src="/profile/discord-icon.png" 
+                    alt="Discord" 
+                    className="social-icon-img"
+                  />
+                  Discord - @hibikineko
                 </a>
                 <a 
                   href="https://myanimelist.net/animelist/HibikiNeko?status=7"
@@ -102,7 +107,12 @@ export default function ProfileClient() {
                   rel="noopener noreferrer"
                   className="social-link mal"
                 >
-                  <span className="social-icon">✖️</span> MyAnimeList
+                  <img 
+                    src="/profile/mal-icon.png" 
+                    alt="MyAnimeList" 
+                    className="social-icon-img"
+                  />
+                  MyAnimeList Profile
                 </a>
               </div>
             </div>
