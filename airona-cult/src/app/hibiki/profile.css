@@ -17,6 +17,36 @@
   padding-bottom: 1rem;
 }
 
+/* Theme Toggle Button */
+.theme-toggle {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 182, 193, 0.5);
+  box-shadow: 0 4px 15px rgba(178, 235, 242, 0.4);
+  cursor: pointer;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 6px 20px rgba(178, 235, 242, 0.6);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -647,6 +677,14 @@
     padding: 1.5rem;
   }
 
+  .theme-toggle {
+    top: 1rem;
+    right: 1rem;
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+
   .card-title {
     font-size: 1.2rem;
   }
@@ -688,6 +726,14 @@
     font-size: 1.1rem;
   }
 
+  .theme-toggle {
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
   .about-item {
     flex-direction: column;
     align-items: flex-start;
@@ -697,4 +743,140 @@
   .about-label {
     min-width: auto;
   }
+}
+
+/* Dark Mode Support */
+.profile-container.dark-mode {
+  background: linear-gradient(135deg, 
+    #1a237e 0%, 
+    #4a148c 25%, 
+    #880e4f 50%, 
+    #0d47a1 75%, 
+    #4a148c 100%
+  );
+}
+
+.profile-container.dark-mode .theme-toggle {
+  background: rgba(30, 30, 50, 0.9);
+  border-color: rgba(138, 43, 226, 0.5);
+  box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+}
+
+.profile-container.dark-mode .theme-toggle:hover {
+  box-shadow: 0 6px 20px rgba(138, 43, 226, 0.6);
+}
+
+.profile-container.dark-mode .profile-card {
+  background: rgba(30, 30, 50, 0.85);
+  border-color: rgba(138, 43, 226, 0.4);
+  box-shadow: 
+    0 10px 30px rgba(138, 43, 226, 0.3),
+    0 0 0 1px rgba(138, 43, 226, 0.3) inset;
+  color: #e0e0e0;
+}
+
+.profile-container.dark-mode .profile-card:hover {
+  box-shadow: 
+    0 15px 40px rgba(138, 43, 226, 0.4),
+    0 0 0 1px rgba(138, 43, 226, 0.4) inset;
+}
+
+.profile-container.dark-mode .profile-name {
+  background: linear-gradient(135deg, #ce93d8, #f48fb1, #81d4fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.profile-container.dark-mode .profile-subtitle,
+.profile-container.dark-mode .about-bio {
+  color: #ce93d8;
+}
+
+.profile-container.dark-mode .card-title {
+  background: linear-gradient(135deg, #f48fb1, #ce93d8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.profile-container.dark-mode .about-item {
+  background: rgba(138, 43, 226, 0.15);
+  color: #e0e0e0;
+}
+
+.profile-container.dark-mode .about-item:hover {
+  background: rgba(138, 43, 226, 0.25);
+}
+
+.profile-container.dark-mode .about-label {
+  color: #ce93d8;
+}
+
+.profile-container.dark-mode .about-value {
+  color: #e0e0e0;
+}
+
+.profile-container.dark-mode .watching-item {
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(236, 64, 122, 0.2));
+  border-color: rgba(236, 64, 122, 0.4);
+}
+
+.profile-container.dark-mode .watching-title {
+  color: #e0e0e0;
+}
+
+.profile-container.dark-mode .quote-content {
+  background: linear-gradient(135deg, rgba(236, 64, 122, 0.2), rgba(138, 43, 226, 0.2));
+  border-left-color: #f48fb1;
+}
+
+.profile-container.dark-mode .quote-text {
+  color: #ce93d8;
+}
+
+.profile-container.dark-mode .quote-text::before,
+.profile-container.dark-mode .quote-text::after {
+  color: #f48fb1;
+}
+
+.profile-container.dark-mode .hobby-tag {
+  background: linear-gradient(135deg, rgba(206, 147, 216, 0.15), rgba(129, 212, 250, 0.15));
+  border-color: rgba(206, 147, 216, 0.4);
+  color: #ce93d8;
+}
+
+.profile-container.dark-mode .hobby-tag:hover {
+  background: linear-gradient(135deg, rgba(206, 147, 216, 0.25), rgba(129, 212, 250, 0.25));
+}
+
+.profile-container.dark-mode .character-name {
+  color: #ce93d8;
+}
+
+.profile-container.dark-mode .character-title {
+  color: #e0e0e0;
+}
+
+.profile-container.dark-mode .character-traits {
+  color: #81d4fa;
+}
+
+.profile-container.dark-mode .character-image-wrapper,
+.profile-container.dark-mode .anime-image-wrapper {
+  border-color: rgba(206, 147, 216, 0.5);
+  box-shadow: 0 4px 12px rgba(138, 43, 226, 0.4);
+  background: linear-gradient(135deg, rgba(206, 147, 216, 0.2), rgba(138, 43, 226, 0.2));
+}
+
+.profile-container.dark-mode .anime-name {
+  color: #81d4fa;
+}
+
+.profile-container.dark-mode .anime-genre {
+  color: #f48fb1;
+}
+
+.profile-container.dark-mode .anime-icon {
+  background: rgba(30, 30, 50, 0.9);
 }
