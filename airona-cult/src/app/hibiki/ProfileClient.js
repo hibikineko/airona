@@ -168,7 +168,7 @@ export default function ProfileClient() {
                   </div>
                   <div className="character-info">
                     <h3 className="character-name">Elaina</h3>
-                    <p className="character-title">"Wandering Witch"</p>
+                    <p className="character-title">Majo no Tabitabi</p>
                     <p className="character-traits">Witch • Cheeky </p>
                   </div>
                 </a>
