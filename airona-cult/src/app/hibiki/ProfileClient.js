@@ -94,7 +94,12 @@ export default function ProfileClient() {
                   className="social-link discord"
                   title="@hibikineko"
                 >
-                  <span className="social-icon">💬</span> @hibikineko
+                  <img 
+                    src="/profile/discord-icon.png" 
+                    alt="Discord" 
+                    className="social-icon-img"
+                  />
+                  Discord - @hibikineko
                 </a>
                 <a 
                   href="https://myanimelist.net/animelist/HibikiNeko?status=7"
@@ -102,7 +107,12 @@ export default function ProfileClient() {
                   rel="noopener noreferrer"
                   className="social-link mal"
                 >
-                  <span className="social-icon">✖️</span> MyAnimeList
+                  <img 
+                    src="/profile/mal-icon.png" 
+                    alt="MyAnimeList" 
+                    className="social-icon-img"
+                  />
+                  MyAnimeList Profile
                 </a>
               </div>
             </div>
@@ -152,7 +162,7 @@ export default function ProfileClient() {
               </h2>
               <div className="characters-grid">
                 <a 
-                  href="https://myanimelist.net/character/162567/Elaina"
+                  href="https://myanimelist.net/character/151335/Elaina?q=elaina&cat=character"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="character-card"
@@ -174,7 +184,7 @@ export default function ProfileClient() {
                 </a>
 
                 <a 
-                  href="https://myanimelist.net/character/154597/Elysia"
+                  href="https://myanimelist.net/character/223977/Elysia?q=elysia&cat=character"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="character-card"
@@ -196,7 +206,7 @@ export default function ProfileClient() {
                 </a>
 
                 <a 
-                  href="https://myanimelist.net/character/173417/Mahiru_Shiina"
+                  href="https://myanimelist.net/character/193569/Mahiru_Shiina?q=mahiru%20shiina&cat=character"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="character-card"

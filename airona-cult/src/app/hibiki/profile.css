@@ -242,16 +242,11 @@
   box-shadow: 0 6px 20px rgba(103, 58, 183, 0.5);
 }
 
-.social-link.discord {
-  background: linear-gradient(135deg, #7289da 0%, #99aab5 100%);
-}
-
-.social-link.mal {
-  background: linear-gradient(135deg, #2e51a2 0%, #4a69bd 100%);
-}
-
-.social-icon {
-  font-size: 1.2rem;
+.social-icon-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* Profile Grid */
