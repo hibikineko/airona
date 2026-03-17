@@ -85,6 +85,36 @@ export async function fetchSesbian(page = 0, pageSize = 12) {
   }
 }
 
+// Fetch twin with pagination
+export async function fetchTwin(page = 0, pageSize = 12) {
+  try {
+    console.log('[FETCH TWIN] Starting fetch from:', `${API_BASE}/content/twin?page=${page}&pageSize=${pageSize}`);
+    const response = await fetch(
+      `${API_BASE}/content/twin?page=${page}&pageSize=${pageSize}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'force-cache',
+        next: { revalidate: 300 }
+      }
+    );
+
+    console.log('[FETCH TWIN] Response status:', response.status);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch twin: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('[FETCH TWIN] Result:', result);
+    return result.data || [];
+  } catch (error) {
+    console.error('[FETCH TWIN] Error fetching twin:', error);
+    return [];
+  }
+}
+
 
 // fetch latest posts
 export async function fetchPosts(limit = 10) {

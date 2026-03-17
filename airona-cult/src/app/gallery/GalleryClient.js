@@ -273,8 +273,16 @@ function AutoCarousel({ title, items = [], category, icon, onImageClick }) {
   );
 }
 
-export default function GalleryClient({ initialFanart = [], initialScreenshots = [], initialSesbian = [] }) {
+export default function GalleryClient({ initialFanart = [], initialScreenshots = [], initialSesbian = [], initialTwin = [] }) {
   const [openImage, setOpenImage] = useState(null);
+
+  console.log('[GALLERY CLIENT] Received props:', {
+    fanart: initialFanart?.length || 0,
+    screenshots: initialScreenshots?.length || 0,
+    sesbian: initialSesbian?.length || 0,
+    twin: initialTwin?.length || 0
+  });
+  console.log('[GALLERY CLIENT] Twin items:', initialTwin);
 
   return (
     <Box>
@@ -299,6 +307,13 @@ export default function GalleryClient({ initialFanart = [], initialScreenshots =
           items={initialSesbian}
           category="sesbian"
           icon="💕"
+          onImageClick={setOpenImage}
+        />
+        <AutoCarousel
+          title="Twin"
+          items={initialTwin}
+          category="twin"
+          icon="👯"
           onImageClick={setOpenImage}
         />
       </Container>
