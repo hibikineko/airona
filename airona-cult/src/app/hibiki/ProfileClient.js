@@ -85,16 +85,16 @@ export default function ProfileClient() {
                 <div className="about-item">
                   <span className="about-emoji">💖</span>
                   <span className="about-label">Loves:</span>
-                  <span className="about-value">Cute Fictional Girls (specially royal ones)</span>
+                  <span className="about-value">My Twin</span>
                 </div>
                 <div className="about-item">
                   <span className="about-emoji">📘</span>
-                  <span className="about-label">Current Status:</span>
-                  <span className="about-value">Enjoying BPSR</span>
+                  <span className="about-label">Currently Playing:</span>
+                  <span className="about-value">Blue Protocol</span>
                 </div>
                 <div className="about-item">
                   <span className="about-emoji">🐱</span>
-                  <span className="about-label">Cat or Dogs</span>
+                  <span className="about-label">Meow?</span>
                   <span className="about-value">Meow</span>
                 </div>
               </div>
