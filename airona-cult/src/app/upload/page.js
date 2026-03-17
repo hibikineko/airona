@@ -22,7 +22,7 @@ export default function UploadPage() {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    type: "fanart", // fanart, screenshot, sesbian
+    type: "fanart", // fanart, screenshot, sesbian, twin
     title: "",
     source: "",
     artist: "",
@@ -98,11 +98,6 @@ export default function UploadPage() {
 
     alert("Upload successful!");
     setForm({ type: "fanart", title: "", source: "", artist: "", image: null });
-
-    // redirect to gallery after short delay
-    setTimeout(() => {
-      router.push("/gallery");
-    }, 500);
   };
 
   if (status === "loading" || checkingAdmin) {
@@ -147,6 +142,7 @@ export default function UploadPage() {
                 <MenuItem value="fanart">Fanart</MenuItem>
                 <MenuItem value="screenshot">Screenshot</MenuItem>
                 <MenuItem value="sesbian">Sesbian</MenuItem>
+                <MenuItem value="twin">Twin</MenuItem>
               </TextField>
 
               <TextField
